@@ -37,18 +37,39 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 project(titan C ASM)
 
-add_library(titan_interface INTERFACE)
+set(EXECUTABLE ${PROJECT_NAME}.elf)
 
-target_compile_options(titan_interface INTERFACE
-  "-mcpu=cortex-m4" 
-  "-mthumb" 
-  "-mfpu=fpv4-sp-d16"
-  "-ffreestanding"
+add_executable(${EXECUTABLE} 
+  main.c
 )
 
-target_link_options(titan_interface INTERFACE
-  "-nostartfiles" 
-  "-specs=nosys.specs"
+target_include_directories(${EXECUTABLE} PRIVATE
+  ${CMAKE_SOURCE_DIR}/internal
 )
 
-message(VERBOSE "Titan: Configuring modules.")
+target_compile_options(${EXECUTABLE} PRIVATE
+  -mcpu=cortex-m7
+  -mthumb
+  -mfpu=fpv4-sp-d16
+  -mfloat-abi=hard
+  -fdata-sections
+  -ffreestanding
+  -T devboard.ld
+  -O2
+  -g3
+)
+
+target_link_options(${EXECUTABLE} PRIVATE
+  -nostdlib
+  -T ${CMAKE_SOURCE_DIR}/internal/linker.ld
+  -mcpu=cortex-m7
+  -mthumb
+  -mfpu=fpv4-sp-d16
+  -mfloat-abi=hard
+  -specs=nano.specs
+  -lnosys
+  -Wl,-Map=${PROJECT_NAME}.map,--cref
+  -Wl,--gc-sections
+  -Xlinker
+  -print-memory-usage
+)
