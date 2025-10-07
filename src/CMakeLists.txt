@@ -40,7 +40,7 @@ project(titan C ASM)
 set(EXECUTABLE ${PROJECT_NAME}.elf)
 
 add_executable(${EXECUTABLE} 
-  main.c
+  ${CMAKE_SOURCE_DIR}/main.c
   ${CMAKE_SOURCE_DIR}/internal/startup.c
   ${CMAKE_SOURCE_DIR}/internal/interrupt.c
   ${CMAKE_SOURCE_DIR}/internal/vtable.c
@@ -58,7 +58,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
   -fdata-sections
   -ffreestanding
   -T devboard.ld
-  -O2
+  # -O2
   -g3
 )
 
