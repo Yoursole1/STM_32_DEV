@@ -83,10 +83,10 @@ static void _invoke_init_fn(void) {
 // Invokes destructor functions
 static void _invoke_fini_fn(void) {
   typedef void (*fini_fn_t)(void);
-  extern fini_fn_t *__fini_array_start;
-  extern fini_fn_t *__fini_array_end;
-  fini_fn_t *cur_fn = __fini_array_start;
-  while (cur_fn < __fini_array_end) {
+  extern fini_fn_t __fini_array_start;
+  extern fini_fn_t __fini_array_end;
+  fini_fn_t *cur_fn = &__fini_array_start;
+  while (cur_fn < &__fini_array_end) {
     (*cur_fn)();
     cur_fn++;
   }
