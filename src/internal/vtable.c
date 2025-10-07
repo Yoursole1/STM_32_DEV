@@ -21,7 +21,7 @@
 
 #pragma once
 #include <stdint.h>
-#include "internal/interrupt.h"
+#include "interrupt.h"
 
 /** @brief Size of the interrupt vector table. */
 #define VTABLE_SIZE 256

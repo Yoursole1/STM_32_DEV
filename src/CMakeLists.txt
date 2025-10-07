@@ -41,6 +41,9 @@ set(EXECUTABLE ${PROJECT_NAME}.elf)
 
 add_executable(${EXECUTABLE} 
   main.c
+  ${CMAKE_SOURCE_DIR}/internal/startup.c
+  ${CMAKE_SOURCE_DIR}/internal/interrupt.c
+  ${CMAKE_SOURCE_DIR}/internal/vtable.c
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE

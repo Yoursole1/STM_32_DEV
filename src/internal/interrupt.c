@@ -19,7 +19,7 @@
  * @brief Implementation of reference information for system interrupts.
  */
 
-#include "internal/interrupt.h"
+#include "interrupt.h"
 
 /**************************************************************************************************
  * @section Miscellaneous Constants
