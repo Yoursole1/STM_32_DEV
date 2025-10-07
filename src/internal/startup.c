@@ -71,10 +71,10 @@ static void _clear_prog_mem(void) {
 // Invokes constructor functions
 static void _invoke_init_fn(void) {
   typedef void (*init_fn_t)(void);
-  extern init_fn_t *__init_array_start;
-  extern init_fn_t *__init_array_end;
-  init_fn_t *cur_fn = __init_array_start;
-  while (cur_fn < __init_array_end) {
+  extern init_fn_t __init_array_start;
+  extern init_fn_t __init_array_end;
+  init_fn_t *cur_fn = &__init_array_start;
+  while (cur_fn < &__init_array_end) {
     (*cur_fn)();
     cur_fn++;
   }
