@@ -1,8 +1,1 @@
-
-
-
-int main(){
-
-
-    return 1;
-}
+void _start() {}
