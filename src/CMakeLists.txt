@@ -44,10 +44,11 @@ add_executable(${EXECUTABLE}
   ${CMAKE_SOURCE_DIR}/internal/startup.c
   ${CMAKE_SOURCE_DIR}/internal/interrupt.c
   ${CMAKE_SOURCE_DIR}/internal/vtable.c
+  ${CMAKE_SOURCE_DIR}/internal/mmio.c
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE
-  ${CMAKE_SOURCE_DIR}/internal
+  ${CMAKE_SOURCE_DIR}
 )
 
 target_compile_options(${EXECUTABLE} PRIVATE
