@@ -47,6 +47,8 @@ add_executable(${EXECUTABLE}
   ${CMAKE_SOURCE_DIR}/internal/mmio.c
   ${CMAKE_SOURCE_DIR}/peripheral/gpio.c
   ${CMAKE_SOURCE_DIR}/peripheral/watchdog.c
+  ${CMAKE_SOURCE_DIR}/peripheral/pwm.c
+  ${CMAKE_SOURCE_DIR}/internal/alloc.c
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE

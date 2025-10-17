@@ -23,6 +23,7 @@
 __SYS_ALIGN   = 4;    /* Memory address alignment */
 __STACK_ALIGN = 8;    /* Stack alignment */
 __KSTACK_SIZE = 1024; /* Size of kernel stack regions for both cores */
+__HEAP_SIZE = 64k;
 
 /* Program entry point */
 ENTRY(cm7_reset_exc_handler)
@@ -322,5 +323,14 @@ SECTIONS
     __free_flash_bk2_start = .;
   } > FLASH_BK2
   __free_flash_bk2_end = ORIGIN(FLASH_BK2) + LENGTH(FLASH_BK2);
+
+
+  /* Section for heap (allocator) */
+  .heap :
+  {
+    __heap_start = .;
+    . += __HEAP_SIZE;
+    __heap_end = .;
+  } > SRAM123
 
 }
