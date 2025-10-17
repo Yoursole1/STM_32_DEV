@@ -45,6 +45,8 @@ add_executable(${EXECUTABLE}
   ${CMAKE_SOURCE_DIR}/internal/interrupt.c
   ${CMAKE_SOURCE_DIR}/internal/vtable.c
   ${CMAKE_SOURCE_DIR}/internal/mmio.c
+  ${CMAKE_SOURCE_DIR}/peripheral/gpio.c
+  ${CMAKE_SOURCE_DIR}/peripheral/watchdog.c
 )
 
 target_include_directories(${EXECUTABLE} PRIVATE
