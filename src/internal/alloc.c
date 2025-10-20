@@ -1,8 +1,8 @@
 //
 // Created by Joshua Beard on 9/27/25.
 //
-
 #include "alloc.h"
+#include "peripheral/gpio.h" // FOR TESTING < REMOVE
 
 struct block_t{
     struct block_t* next_block;

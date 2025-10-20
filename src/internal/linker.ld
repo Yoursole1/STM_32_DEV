@@ -22,7 +22,7 @@
 /* Reference constants */
 __SYS_ALIGN   = 4;    /* Memory address alignment */
 __STACK_ALIGN = 8;    /* Stack alignment */
-__KSTACK_SIZE = 1024; /* Size of kernel stack regions for both cores */
+__KSTACK_SIZE = 20k; /* Size of kernel stack regions for both cores */
 __HEAP_SIZE = 64k;
 
 /* Program entry point */
