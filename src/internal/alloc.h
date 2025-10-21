@@ -3,7 +3,7 @@
 #include "stdint.h"
 
 // POINTER TO START OF HEAP
-static void* HEAP_START = (void*) 0x0;
+extern void* HEAP_START;
 
 //----------------------------------------------------------------------------------
 // BEGIN CONFIGURATION SECTION

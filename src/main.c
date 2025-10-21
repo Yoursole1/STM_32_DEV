@@ -24,6 +24,7 @@ void delay(){
 }
 
 
+extern uint32_t __heap_start;
 
 void _start() {
 
@@ -40,10 +41,9 @@ void _start() {
 
     // ti_IWDG_enable();
 
-    extern uint32_t __heap_start;
-    uint32_t* heap_start_addr = &__heap_start;
-    HEAP_START = heap_start_addr;
 
+    HEAP_START = &__heap_start;
+    
     int init = init_heap(); // initialize allocator
     if(init == -1){
         for(int i = 0; i < 3; i++){
@@ -62,15 +62,31 @@ void _start() {
     }
 
 
-    uint8_t* my_mem = alloc(5);
+    tal_set_pin(YELLOW_LED, 1);
 
-
-
-
-
-    for(int i = 0; i < 1000000; i++){
-        asm("nop");
+    uint8_t* pts16[10];
+    for(int i = 0; i < 10; i++){
+        pts16[i] = alloc(16);
     }
+
+    uint8_t* pts32[10];
+    for(int i = 0; i < 10; i++){
+        pts32[i] = alloc(17);
+    }
+
+    bool free[20];
+    for(int i = 0; i < 20; i++){
+        int j = (i >= 10 ? i - 10 : i);
+        free[i] = isFree((i >= 10 ? pts32[j] : pts16[j]));
+    }
+
+    bool a = isFree(pts32[9] + 31);
+    bool b = isFree(pts32[9] + 32);
+    bool c = isFree(pts32[9] + 33);
+
+
+    tal_set_pin(YELLOW_LED, 0);
+    asm("BKPT #0");
 
     uint32_t button_cooldown = 0;
     while(true){

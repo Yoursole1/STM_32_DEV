@@ -4,6 +4,8 @@
 #include "alloc.h"
 #include "peripheral/gpio.h" // FOR TESTING < REMOVE
 
+void* HEAP_START = (void*)0x0;
+
 struct block_t{
     struct block_t* next_block;
 };

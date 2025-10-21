@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "interrupt.h": "c"
+        "interrupt.h": "c",
+        "locale": "c",
+        "mmio.h": "c",
+        "gpio.h": "c",
+        "stdbool.h": "c",
+        "alloc.h": "c",
+        "watchdog.h": "c"
     }
 }
