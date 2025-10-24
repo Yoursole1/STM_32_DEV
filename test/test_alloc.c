@@ -43,7 +43,7 @@ static void assert_check(int condition, const char* msg) {
     local_asserts++; // count each assertion
 
     const char* tag = condition ? "[OK]" : "[FAIL]";
-    const int tag_col = 72;
+    const int tag_col = 80;
     const int indent = 6;  
     int tag_len = (int)strlen(tag);
     int max_msg_len = tag_col - indent - tag_len;
@@ -298,7 +298,7 @@ static void test_pool_generic(uint32_t idx) {
     }
 }
 
-// --- New: per-pool test wrappers ---
+// test all pool sizes
 static void test_pool_16(void)   { test_pool_generic(0); }
 static void test_pool_32(void)   { test_pool_generic(1); }
 static void test_pool_64(void)   { test_pool_generic(2); }
