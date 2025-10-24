@@ -2,7 +2,7 @@
 // Created by Joshua Beard on 9/27/25.
 //
 #include "alloc.h"
-#include "peripheral/gpio.h" // FOR TESTING < REMOVE
+// #include "peripheral/gpio.h" // FOR TESTING < REMOVE
 
 void* HEAP_START = (void*)0x0;
 
@@ -158,6 +158,7 @@ uint32_t init_heap() {
  * @return
  */
 void* alloc(uint32_t size) {
+    // if (size == 0 || size > TOTAL_HEAP_SIZE) return ((void*)0);
     // find ideal i
     uint32_t i = 0;
     for(; size > POOL_BLOCK_SIZES[i] && i < NUMBER_OF_POOLS; i++);
