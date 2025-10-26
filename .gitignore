@@ -240,6 +240,6 @@ Temporary Items
 *.icloud
 
 # Testing files
-src/build/test_alloc
+test_alloc
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,c,c++,clion,macos

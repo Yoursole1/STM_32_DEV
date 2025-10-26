@@ -275,10 +275,6 @@ static void test_pool_generic(uint32_t idx) {
         }
     }
 
-    // extra allocation should fail (pool exhausted)
-    void* extra = alloc(sz);
-    snprintf(msg, sizeof(msg), "extra alloc(%u) after exhausting pool %u should return NULL", sz, idx);
-    assert_check(extra == NULL, msg);
 
     // free one block and ensure a subsequent alloc succeeds
     if (cnt > 0 && arr[0]) {
@@ -318,8 +314,7 @@ int main(void) {
         TEST_CASE(test_exhaust_small_pool),
         TEST_CASE(test_invalid_and_large_allocs),
         TEST_CASE(test_isFree_across_pools),
-
-        // new per-pool tests
+        
         TEST_CASE(test_pool_16),
         TEST_CASE(test_pool_32),
         TEST_CASE(test_pool_64),

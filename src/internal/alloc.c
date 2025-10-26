@@ -58,7 +58,9 @@ uint32_t get_index(void* block){
      * bored then I would be forever grateful if you could make this fast.
      */
 
-    if((uint8_t*)block < (uint8_t*)HEAP_START || (uint8_t*)block > ((uint8_t*)HEAP_START) + TOTAL_HEAP_SIZE){ // out of range
+     // updated condition to >= because:
+     // HEAP_START + TOTAL_HEAP_SIZE will be 1 out of range, so if block equals that, that's 1 OOB
+    if((uint8_t*)block < (uint8_t*)HEAP_START || (uint8_t*)block >= ((uint8_t*)HEAP_START) + TOTAL_HEAP_SIZE){ // out of range
         return -1;
     }
 
@@ -163,11 +165,12 @@ void* alloc(uint32_t size) {
     }
     // find ideal i
     uint32_t i = 0;
-    for(; size > POOL_BLOCK_SIZES[i] && i < NUMBER_OF_POOLS; i++);
-
+    // i < NUMBER_OF_POOLS comes first so that it can terminate condition early
+    for(; i < NUMBER_OF_POOLS && size > POOL_BLOCK_SIZES[i]; i++);
+    if (i >= NUMBER_OF_POOLS) return (void*)(0);
     // if the pool for ideal i is already full (null head), keep going to next block until we find a free one
     struct block_t* block = pool_heads[i];
-    while(block == ((void*)0) && i < NUMBER_OF_POOLS){
+    while(block == ((void*)0) && i < NUMBER_OF_POOLS-1){ // subtracting 1 here because of ++i
         block = pool_heads[++i];
     }
 
@@ -186,7 +189,7 @@ void* alloc(uint32_t size) {
     is_free[big_index] &= ~((uint8_t)1 << small_index);
 
     for(int j = 0; j < POOL_BLOCK_SIZES[i]; j++){ // zero this block before returning
-        *(((uint8_t*)block) + i) = 0;
+        *(((uint8_t*)block) + j) = 0; // changed this to j? not sure why this was i before.
     }
 
     return block;
