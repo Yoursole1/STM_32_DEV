@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <stdarg.h>
 #include "../src/internal/alloc.h"
 
 extern void* HEAP_START;
@@ -38,6 +39,25 @@ static int failure_pipe_fd = -1;
 static int local_asserts = 0;
 static int local_failures = 0;
 
+static FILE* out_fp = NULL;
+
+// write to stdout and output file (if open)
+static void log_printf(const char* fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(stdout, fmt, ap);
+	va_end(ap);
+
+	if (out_fp) {
+		va_list ap2;
+		va_start(ap2, fmt);
+		vfprintf(out_fp, fmt, ap2);
+		va_end(ap2);
+		fflush(out_fp);
+	}
+	fflush(stdout);
+}
+
 // assert helper
 static void assert_check(int condition, const char* msg) {
     local_asserts++; // count each assertion
@@ -53,14 +73,29 @@ static void assert_check(int condition, const char* msg) {
     int msg_len = snprintf(trunc_msg, sizeof(trunc_msg), "%s", msg);
     if (msg_len > max_msg_len) msg_len = max_msg_len;
 
-    // print aligned
-    printf("    - ");
-    fwrite(trunc_msg, 1, msg_len, stdout);
+    // build aligned line into buffer, then print via log_printf
+    char linebuf[2048];
+    int pos = 0;
+    pos += snprintf(linebuf + pos, sizeof(linebuf) - pos, "    - ");
+    // append truncated message
+    if (msg_len > 0) {
+        strncat(linebuf + pos, trunc_msg, (size_t)msg_len);
+        pos = (int)strlen(linebuf);
+    }
     int spaces = tag_col - indent - msg_len - tag_len;
     if (spaces < 1) spaces = 1;
-    for (int i = 0; i < spaces; ++i) putchar(' ');
-    printf("%s\n", tag);
-    fflush(stdout);
+    for (int i = 0; i < spaces && pos + 1 < (int)sizeof(linebuf); ++i) {
+        linebuf[pos++] = ' ';
+    }
+    // append tag and null-terminate
+    if (pos + tag_len + 2 < (int)sizeof(linebuf)) {
+        strcpy(linebuf + pos, tag);
+        pos += tag_len;
+    }
+    linebuf[pos++] = '\n';
+    linebuf[pos] = '\0';
+
+    log_printf("%s", linebuf);
 
     if (!condition) {
         local_failures++;
@@ -88,7 +123,7 @@ static void run_test(const TestCase* tc) {
         failure_pipe_fd = (pfd[1] >= 0) ? pfd[1] : -1;
 
         current_test_name = tc->name;
-        printf("%s\n", tc->name);
+        log_printf("%s\n", tc->name);
         fflush(stdout);
 
         failure_count = 0;
@@ -148,7 +183,7 @@ static void run_test(const TestCase* tc) {
 
     if (WIFSIGNALED(status)) { // crash
         int sig = WTERMSIG(status);
-        printf("    Result: CRASH (signal %d)\n", sig);
+        log_printf("    Result: CRASH (signal %d)\n", sig);
         if (failure_count < MAX_FAILURES) {
             failures[failure_count].test_name = tc->name;
             failures[failure_count].msg = "test crashed (signal)";
@@ -304,7 +339,14 @@ static void test_pool_512(void)  { test_pool_generic(5); }
 static void test_pool_1024(void) { test_pool_generic(6); }
 
 int main(void) {
-    printf("Running alloc unit tests...\n");
+    // open output file
+    out_fp = fopen("alloctest_output.txt", "w");
+    if (!out_fp) {
+        perror("fopen alloctest_output.txt");
+        // continue without file output
+    }
+
+    log_printf("Running alloc unit tests...\n");
 
     TestCase tests[] = {
         TEST_CASE(test_init_heap_basic),
@@ -331,14 +373,19 @@ int main(void) {
         run_test(&tests[i]);
     }
 
-    printf("\nSummary: %d/%d assertions passed, %d failed.\n",
+    log_printf("\nSummary: %d/%d assertions passed, %d failed.\n",
            total_asserts - total_failures, total_asserts, total_failures);
 
     if (total_failures > 0) {
-        printf("Failures:\n");
+        log_printf("Failures:\n");
         for (int i = 0; i < failure_count; ++i) {
-            printf("  [%s] %s\n", failures[i].test_name, failures[i].msg);
+            log_printf("  [%s] %s\n", failures[i].test_name, failures[i].msg);
         }
+    }
+
+    if (out_fp) {
+        fclose(out_fp);
+        out_fp = NULL;
     }
 
     return (total_failures == 0) ? 0 : 1;

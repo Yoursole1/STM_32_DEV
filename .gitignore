@@ -241,5 +241,6 @@ Temporary Items
 
 # Testing files
 test_alloc
+alloctest_output.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,c,c++,clion,macos
