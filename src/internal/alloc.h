@@ -14,12 +14,12 @@ extern void* HEAP_START;
 // Must have POOL_BLOCK_SIZES[n + 1] > POOL_BLOCK_SIZES[n] && POOL_BLOCK_SIZES[0] >= sizeof(void*)
 // The first rule is because of how the algorithm works
 // The second is because all blocks need to be large enough to store a pointer (8 bytes for my system)
-static uint32_t POOL_BLOCK_SIZES[NUMBER_OF_POOLS] = {16, 32, 64, 128, 256, 512, 1028}; // note these do not need to be powers of two
+static uint32_t POOL_BLOCK_SIZES[NUMBER_OF_POOLS] = {16, 32, 64, 128, 256, 512, 1024}; // note these do not need to be powers of two
 static uint32_t POOL_SIZES[NUMBER_OF_POOLS] = {118, 100, 200, 100, 100, 5, 5};
 
 // POOL_BLOCK_SIZES ⋅ POOL_SIZES, it would be nice to generate this line
 // (16 * 2) + (32 * 2) + (64 * 3) + (128 * 3) = 672
-#define TOTAL_HEAP_SIZE 63988
+#define TOTAL_HEAP_SIZE 63968
 
 
 // STEPS TO FIND IS_FREE_SIZE

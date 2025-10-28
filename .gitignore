@@ -213,7 +213,8 @@ CMakeUserPresets.json
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -237,5 +238,9 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+
+# Testing files
+test_alloc
+alloctest_output.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,c,c++,clion,macos
