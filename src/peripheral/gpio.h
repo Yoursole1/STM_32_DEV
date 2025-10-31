@@ -1,34 +1,34 @@
 /**
  * This file is part of the Titan Flight Computer Project
  * Copyright (c) 2024 UW SARP
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @file modules/mcu/include/mcu/gpio.h
  * @authors Joshua Beard
  * @brief Driver API for the GPIO
  */
 
 #pragma once
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 // let A = 0, B = 1, --- , K = 10
 // Port [A:K] = [0:10]
 
-// Entries in this table are the pin numbers.  
+// Entries in this table are the pin numbers.
 // int32_t pins[PORTS][PINS] = {
 // //    PIN # Within Port
 // //    0   0   0   0   0   0   0   0   0   0   1   1   1   1   1   1
@@ -47,41 +47,49 @@
 //  };
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
- * @param mode: 0 for in, 1 for general purpose output, 2 for alternate function, 3 for analog
-*/
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
+ * @param mode: 0 for in, 1 for general purpose output, 2 for alternate
+ * function, 3 for analog
+ */
 void tal_set_mode(int pin, int mode);
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
  * @param mode: 0 for push pull, 1 for open drain
- */ 
+ */
 void tal_set_drain(int pin, int drain);
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
  * @param mode: 0 : Low speed
  *              1 : Medium speed
  *              2 : Fast speed
  *              3 : High speed
- */ 
+ */
 void tal_set_speed(int pin, int speed);
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
  * @param pull: -1 for low, 0 for floating, 1 for high
-*/
+ */
 void tal_pull_pin(int pin, int pull);
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
  * @param value: 0 for off, 1 for on
-*/
+ */
 void tal_set_pin(int pin, int value);
 
 /**
- * Used to configure the alternate mode of the pin if set in alternate modeby #tal_set_mode
- * @param pin: The single integer value of the pin, found in specific docs page 60
+ * Used to configure the alternate mode of the pin if set in alternate modeby
+ #tal_set_mode
+ * @param pin: The single integer value of the pin, found in specific docs page
+ 60
  * @param value: 0000b: AF0
                  0001b: AF1
                  0010b: AF2
@@ -102,10 +110,11 @@ void tal_set_pin(int pin, int value);
 void tal_alternate_mode(int pin, int value);
 
 /**
- * @param pin: The single integer value of the pin, found in specific docs page 60
- * 
+ * @param pin: The single integer value of the pin, found in specific docs page
+ * 60
+ *
  * @return true if pin is high, false if pin is low
-*/
+ */
 bool tal_read_pin(int pin);
 
 /**

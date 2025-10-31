@@ -235,7 +235,7 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
 bool uart_write_byte(uart_channel_t channel, uint8_t data) {
   uint32_t count = 0;
   // Get the correct registers/fields
-  rw_reg32_t isr_reg;
+  ro_reg32_t isr_reg;
   field32_t isr_field;
   rw_reg32_t tdr_reg;
   field32_t tdr_field;
@@ -272,9 +272,9 @@ bool uart_read_byte(uint8_t channel, uint8_t *data) {
   uint32_t count = 0;
 
   // Get the correct registers/fields.
-  rw_reg32_t isr_reg;
+  ro_reg32_t isr_reg;
   field32_t isr_field;
-  rw_reg32_t rdr_reg;
+  ro_reg32_t rdr_reg;
   field32_t rdr_field;
 
   // Use the macro to select the correct register set for USART vs UART
@@ -478,6 +478,8 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_UE, 1);
   WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_TE, 1);
   WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_RE, 1);
+
+  return true;
 }
 
 bool uart_write_async(uart_channel_t channel, uint8_t *tx_buff, uint32_t size) {
@@ -501,7 +503,7 @@ bool uart_write_async(uart_channel_t channel, uint8_t *tx_buff, uint32_t size) {
       .instance = uart_to_dma[channel].tx_instance,
       .stream = uart_to_dma[channel].tx_stream,
       .src = tx_buff,
-      .dest = UART_MAP[channel].TDR,
+      .dest = (void *)UART_MAP[channel].TDR, // maybe revisit the cast... in dma transfer struct
       .size = size,
       .context = &uart_contexts[channel],
       .disable_mem_inc = false,
@@ -534,7 +536,7 @@ bool uart_read_async(uart_channel_t channel, uint8_t *rx_buff, uint32_t size) {
   dma_transfer_t tx_transfer = {
       .instance = uart_to_dma[channel].tx_instance,
       .stream = uart_to_dma[channel].tx_stream,
-      .src = UART_MAP[channel].RDR,
+      .src = (void *)UART_MAP[channel].RDR,
       .dest = rx_buff,
       .size = size,
       .context = &uart_contexts[channel],
