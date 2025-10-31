@@ -381,6 +381,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   // Ensure the clock pin is disabled for asynchronous mode
   CLR_FIELD(UART_MAP[channel].CR2, USARTx_CR2_CLKEN);
 
+  
   // Set baud rate
   uint32_t clk_freq;
   if (IS_USART_CHANNEL(channel)) {
@@ -389,13 +390,11 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     clk_freq = clock_get_freq_ahb1();
   }
 
-  // uint32_t brr_value = (uint32_t) __builtin_roundf(
-  //     (float)clk_freq / baud_rate); // If this doesn't work, then likely that
-                                    // __builtin_roundf does not exist
-
-  uint32_t brr_value = (uint32_t) ((float) (clk_freq)/baud_rate);
-
+  
+  uint32_t brr_value = clk_freq / baud_rate;
   WRITE_FIELD(USARTx_BRR[channel], USARTx_BRR_BRR_4_15, brr_value);
+
+
 
   // Set parity
   switch (parity) {
@@ -411,6 +410,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PS);
     break;
   }
+
 
   // Set data length
   switch (data_length) {
@@ -435,6 +435,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
     break;
   }
+  
 
   // Enable FIFOs
   WRITE_FIELD(UART_MAP[channel].CR1, UARTx_CR1_FIFOEN, 1);

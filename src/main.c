@@ -47,6 +47,8 @@ void _start() {
   config.parity = parity;
   config.data_length = data_length;
   config.timeout = 0;
+  
+  
 
 
   int n = uart_init(&config, (void*) ( 0), (void*) (0), (void*) (0));
