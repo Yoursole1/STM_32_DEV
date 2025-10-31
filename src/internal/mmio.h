@@ -42,6 +42,27 @@ typedef struct { uint32_t msk; int32_t pos; } field32_t; /** @brief 32 bit regis
 typedef struct { uint16_t msk; int32_t pos; } field16_t; /** @brief 16 bit register field type. */
 typedef struct { uint8_t  msk; int32_t pos; } field8_t;  /** @brief 8 bit register field type. */
 
+typedef struct {
+    volatile uint32_t *CR1;
+    volatile uint32_t *CR2;
+    volatile uint32_t *CR3;
+    volatile uint32_t *BRR;
+    volatile uint32_t *TDR;
+    volatile uint32_t *RDR;
+    
+} UART_Regs;
+
+static UART_Regs UART_MAP[9] = {
+    [4] = { (uint32_t*)0x40004C00U, (uint32_t*)0x40004C04U, (uint32_t*)0x40004C08U, 
+            (uint32_t*)0x40004C0CU, (uint32_t*)0x40004C28U, (uint32_t*)0x40004C24U },
+    [5] = { (uint32_t*)0x40005000U, (uint32_t*)0x40005004U, (uint32_t*)0x40005008U, 
+            (uint32_t*)0x4000500CU, (uint32_t*)0x40005028U, (uint32_t*)0x40005024U },
+    [7] = { (uint32_t*)0x40007800U, (uint32_t*)0x40007804U, (uint32_t*)0x40007808U, 
+            (uint32_t*)0x4000780CU, (uint32_t*)0x40007828U, (uint32_t*)0x40007824U },
+    [8] = { (uint32_t*)0x40007C00U, (uint32_t*)0x40007C04U, (uint32_t*)0x40007C08U, 
+            (uint32_t*)0x40007C0CU, (uint32_t*)0x40007C28U, (uint32_t*)0x40007C24U },
+};
+
 /**************************************************************************************************
  * @section MMIO Utilities
  **************************************************************************************************/
@@ -117,7 +138,7 @@ typedef struct { uint8_t  msk; int32_t pos; } field8_t;  /** @brief 8 bit regist
 #define SET_FIELD(dst, field) ({ \
   const __auto_type _dst = (dst); \
   const __auto_type _field = (field); \
- *_dst |= _field.msk; \
+  *_dst |= _field.msk; \
 })
 
 /**
