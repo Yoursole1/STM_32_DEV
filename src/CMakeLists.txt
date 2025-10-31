@@ -31,6 +31,12 @@ set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}gcc)
 set(CMAKE_OBJCOPY ${TOOLCHAIN_PREFIX}objcopy)
 set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}objdump)
 set(CMAKE_SIZE ${TOOLCHAIN_PREFIX}size)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set(CMAKE_POSITION_INDEPENDENT_CODE ON) 
+
+# proj dirs
+
+
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -38,6 +44,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 project(titan C ASM)
 
 set(EXECUTABLE ${PROJECT_NAME}.elf)
+enable_testing()
 
 add_executable(${EXECUTABLE} 
   ${CMAKE_SOURCE_DIR}/main.c
@@ -47,9 +54,19 @@ add_executable(${EXECUTABLE}
   ${CMAKE_SOURCE_DIR}/internal/mmio.c
   ${CMAKE_SOURCE_DIR}/peripheral/gpio.c
   ${CMAKE_SOURCE_DIR}/peripheral/watchdog.c
-  ${CMAKE_SOURCE_DIR}/peripheral/pwm.c
+  # ${CMAKE_SOURCE_DIR}/peripheral/pwm.c
   ${CMAKE_SOURCE_DIR}/internal/alloc.c
+  ${CMAKE_SOURCE_DIR}/peripheral/uart.c
+ 
 )
+
+# add_executable(test_allocator.elf
+#   ${CMAKE_TEST_DIR}/test_alloc.c
+#   ${CMAKE_SOURCE_DIR}/internal/alloc.c
+# )
+
+# add_test(NAME TEST_ALLOC COMMAND test_allocator.elf)
+
 
 target_include_directories(${EXECUTABLE} PRIVATE
   ${CMAKE_SOURCE_DIR}
@@ -70,6 +87,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 target_link_options(${EXECUTABLE} PRIVATE
   -nostdlib
   -T ${CMAKE_SOURCE_DIR}/internal/linker.ld
+  # -mtext-section-literals # added for linker issues
   -mcpu=cortex-m7
   -mthumb
   -mfpu=fpv4-sp-d16

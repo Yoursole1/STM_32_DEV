@@ -1,3 +1,4 @@
+#include <stdint.h>
 /**
  * This file is part of the Titan Flight Computer Project
  * Copyright (c) 2024 UW SARP
@@ -14,33 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @file common/platform/watchdog.h
- * @authors Joshua Beard
- * @brief Driver for the watchdog timer
+ * @file src/platform/clk.h
+ * @authors Charles Faisandier
+ * @brief Clock Frequency Getting Utilities
  */
 
-#pragma once
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
+uint32_t clock_get_freq_ahb1();
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-/**
- * Enables the Independent Watchdog
- * Doc Page 2047 for an overview
- * @return if enable succeeded.
- */
-bool ti_IWDG_enable();
-
-/**
- * Resets the countdown so the board doesn't reset
- */
-void ti_IWDG_reset_timer();
-
-#if defined(__cplusplus)
-}
-#endif
+uint32_t clock_get_freq_ahb2();
