@@ -132,3 +132,6 @@ bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
  */
 bool uart_read_blocking(uart_channel_t channel, uint8_t *rx_buff,
                         uint32_t size);
+
+static inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
+                                       size_t size);
