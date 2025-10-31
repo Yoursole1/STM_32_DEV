@@ -18,9 +18,7 @@
  * @authors Joanna Zhou, Charles Faisandier
  * @brief UART Driver Interface. Doesn't support synchronous mode.
  */
-#ifndef _UART_H_
-#define _UART_H_
-
+#pragma once
 #include "../internal/dma.h"
 #include "../internal/mmio.h"
 #include "../util/error.h"
@@ -134,5 +132,3 @@ bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
  */
 bool uart_read_blocking(uart_channel_t channel, uint8_t *rx_buff,
                         uint32_t size);
-
-#endif // !_UART_H_

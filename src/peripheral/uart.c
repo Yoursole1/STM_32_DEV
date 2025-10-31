@@ -326,7 +326,7 @@ inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
 /**
  * Macro that generates cases for uart init
  * @author Owen Voskuhl Hayes, Lorde of the Isle, first of his name.
- * 
+ *
  */
 #define UART_FIELD_GENERATOR(uart, shift, reg)                                 \
   case uart: {                                                                 \
