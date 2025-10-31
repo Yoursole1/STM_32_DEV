@@ -309,7 +309,7 @@ bool uart_read_byte(uint8_t channel, uint8_t *data) {
   return true;
 }
 
-inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
+static inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
                                        size_t size) {
 
   if (buff == NULL) {
@@ -388,9 +388,12 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   } else {
     clk_freq = clock_get_freq_ahb1();
   }
-  uint32_t brr_value = (uint32_t)__builtin_roundf(
-      (float)clk_freq / baud_rate); // If this doesn't work, then likely that
+
+  // uint32_t brr_value = (uint32_t) __builtin_roundf(
+  //     (float)clk_freq / baud_rate); // If this doesn't work, then likely that
                                     // __builtin_roundf does not exist
+
+  uint32_t brr_value = (uint32_t) ((float) (clk_freq)/baud_rate);
 
   WRITE_FIELD(USARTx_BRR[channel], USARTx_BRR_BRR_4_15, brr_value);
 

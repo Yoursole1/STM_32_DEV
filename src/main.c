@@ -3,6 +3,7 @@
 #include "peripheral/watchdog.h"
 // #include "internal/alloc.h"
 #include "peripheral/uart.h"
+#include <stdio.h>
 
 #define USR_BUTTON 9
 #define GREEN_LED 49
@@ -47,8 +48,9 @@ void _start() {
   config.data_length = data_length;
   config.timeout = 0;
 
-  // int n = uart_init(&config, (void*) ( 0), (void*) (0), (void*) (0));
-  int n = 1;
+
+  int n = uart_init(&config, (void*) ( 0), (void*) (0), (void*) (0));
+  // int n = 1; 
   if (n == 1) {
     for (int i = 0; i < 5; i++) {
       tal_set_pin(GREEN_LED, 1);
