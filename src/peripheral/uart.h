@@ -24,7 +24,7 @@
 #include <stddef.h>
 #include "../internal/dma.h"
 #include "../util/error.h"
-// #include "..internal/mmio.h"
+#include "../internal/mmio.h"
 
 /**************************************************************************************************
  * @section Data Structures
