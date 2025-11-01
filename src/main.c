@@ -48,6 +48,7 @@ void _start() {
   config.parity = parity;
   config.data_length = data_length;
   config.timeout = 0;
+  config.clk_freq = 1000000;
   tal_enable_clock(config.tx_pin);
   tal_enable_clock(config.rx_pin);
   tal_enable_clock(config.ck_pin);
