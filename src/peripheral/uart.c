@@ -370,17 +370,21 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   tal_set_mode(tx_pin, 2);
   tal_set_mode(rx_pin, 2);
 
-  // Set the right alternate function
-  if (!set_alternate_function(channel, tx_pin, rx_pin))
-    return false;
+  tal_alternate_mode(tx_pin, 7);
+  tal_alternate_mode(rx_pin, 7);
 
-  // Enable the clocks for the gpio pins
-  tal_enable_clock(rx_pin);
-  tal_enable_clock(tx_pin);
+  // Set the right alternate function
+  // if (!set_alternate_function(channel, tx_pin, rx_pin))
+  //   return false;
+
+  // // Enable the clocks for the gpio pins
+  // tal_enable_clock(rx_pin);
+  // tal_enable_clock(tx_pin);
 
   // Ensure the clock pin is disabled for asynchronous mode
-  CLR_FIELD(UART_MAP[channel].CR2, USARTx_CR2_CLKEN);
-
+  CLR_FIELD(USARTx_CR2[channel], USARTx_CR2_CLKEN);
+  // CLR_FIELD(UART_MAP[channel].CR2, USARTx_CR2_CLKEN);
+  
   
   // Set baud rate
   uint32_t clk_freq;
@@ -399,15 +403,20 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   // Set parity
   switch (parity) {
   case UART_PARITY_DISABLED:
-    CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
+    CLR_FIELD(USARTx_CR1[channel], USARTx_CR1_PCE);
+    // CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
     break;
   case UART_PARITY_EVEN:
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
-    CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PS);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_PCE);
+    // SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
+    CLR_FIELD(USARTx_CR1[channel], USARTx_CR1_PS);
+    // CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PS);
     break;
   case UART_PARITY_ODD:
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PS);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_PCE);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_PS);
+    // SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PCE);
+    // SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_PS);
     break;
   }
 
@@ -419,26 +428,31 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
       // tal_raise(flag, "Invalid parity datasize combo");
       return false;
     }
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[0]);
-    CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[0]);
+    CLR_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[1]);
+    // SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[0]);
+    // CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
     break;
   case UART_DATALENGTH_8:
-    CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[0]);
-    CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
+    CLR_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[0]);
+    CLR_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[1]);
+    // CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[0]);
+    // CLR_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
     break;
   case UART_DATALENGTH_9:
     if (parity) {
       // tal_raise(flag, "Invalid parity datasize combo");
       return false;
     }
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[0]);
-    SET_FIELD(UART_MAP[channel].CR1, UARTx_CR1_Mx[1]);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[0]);
+    SET_FIELD(USARTx_CR1[channel], USARTx_CR1_Mx[1]);
     break;
   }
   
 
   // Enable FIFOs
-  WRITE_FIELD(UART_MAP[channel].CR1, UARTx_CR1_FIFOEN, 1);
+  SET_FIELD(USARTx_CR1[channel], USARTx_CR1_FIFOEN);
+  // WRITE_FIELD(UART_MAP[channel].CR1, UARTx_CR1_FIFOEN, 1);
 
   dma_config_t dma_tx_stream = {
       .instance = tx_stream->instance,
@@ -479,9 +493,14 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   timeout = usart_config->timeout;
 
   // Enable the peripheral
-  WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_UE, 1);
-  WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_TE, 1);
-  WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_RE, 1);
+
+  SET_FIELD(USARTx_CR1[channel], USARTx_CR1_TE);
+  SET_FIELD(USARTx_CR1[channel], USARTx_CR1_RE);
+  SET_FIELD(USARTx_CR1[channel], USARTx_CR1_UE);
+
+  // WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_UE, 1);
+  // WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_TE, 1);
+  // WRITE_FIELD(UART_MAP[channel].CR1, USARTx_CR1_RE, 1);
 
   return true;
 }
