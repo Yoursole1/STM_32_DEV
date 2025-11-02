@@ -76,6 +76,7 @@ void test_pwm(){
     tal_set_mode(TIM2_CH1_1, 2);
     tal_alternate_mode(TIM2_CH1_1, 0);
     //----------
+    
 
     tal_pwm_pin_enable(TIM2_CH1_1, (void*)0);
     asm("BKPT #0");
