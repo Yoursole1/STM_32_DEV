@@ -123,7 +123,7 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
       return false;
     }
     if (rx_pin == 40 || rx_pin == 120) {
-      tal_alternate_mode(tx_pin, 7);
+      tal_alternate_mode(rx_pin, 7);
     } else {
       // tal_raise(flag, "Invalid RX Pin for channel");
       return false;
@@ -136,7 +136,7 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
       // tal_raise(flag, "Invalid TX Pin for channel");
       return false;
     }
-    if (rx_pin == 67 || tx_pin == 110 || tx_pin == 77) {
+    if (rx_pin == 67 || rx_pin == 110 || rx_pin == 77) {
       tal_alternate_mode(rx_pin, 7);
     } else {
       // tal_raise(flag, "Invalid RX Pin for channel");
@@ -162,7 +162,7 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
     }
     break;
   case UART5:
-    if (tx_pin == 133 || rx_pin == 73) {
+    if (tx_pin == 133 || tx_pin == 73) {
       tal_alternate_mode(tx_pin, 14);
     } else if (tx_pin == 111) {
       tal_alternate_mode(tx_pin, 8);
@@ -311,6 +311,9 @@ bool uart_read_byte(uint8_t channel, uint8_t *data) {
 static inline bool verify_transfer_parameters(uart_channel_t channel, uint8_t *buff,
                                        size_t size) {
 
+  if (channel == NULL) {
+    return false;
+  }
   if (buff == NULL) {
     // tal_raise(flag, "Buffer cannot be NULL");
     return false;
@@ -357,7 +360,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     case UART1:
       tx_pin = 98;   
       rx_pin = 99;
-      ck_pin = 97;   
+      ck_pin = 97;  
       break;
     case UART2:
       tx_pin = 39;
@@ -418,12 +421,17 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   // Set alternate-function mode
   tal_set_mode(tx_pin, 2);
   tal_set_mode(rx_pin, 2);
-  set_alternate_function(channel, tx_pin, rx_pin);
+  bool test_set_alt = set_alternate_function(channel, tx_pin, rx_pin);
+  if (!test_set_alt) {
+    return false;
+  }
 
 
   // Ensure the clock pin is disabled for asynchronous mode
-  CLR_FIELD(USARTx_CR2[channel], USARTx_CR2_CLKEN);
-  
+  // TODO: check on this
+  // CLR_FIELD(USARTx_CR2[channel], USARTx_CR2_CLKEN);
+
+  // TODO: maybe calculate via using ints for mantissa/exponent field?
   uint32_t brr_value = clk_freq / baud_rate;
   WRITE_FIELD(USARTx_BRR[channel], USARTx_BRR_BRR_4_15, brr_value);
 
@@ -520,7 +528,10 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
 
 bool uart_write_async(uart_channel_t channel, uint8_t *tx_buff, uint32_t size) {
   // Verify parameters
-  verify_transfer_parameters(channel, tx_buff, size);
+  bool test_params = verify_transfer_parameters(channel, tx_buff, size);
+  if (!test_params) {
+    return false;
+  }
 
   // Check if usart channel is busy
   if (uart_busy[channel]) {
@@ -554,7 +565,10 @@ bool uart_write_async(uart_channel_t channel, uint8_t *tx_buff, uint32_t size) {
 
 bool uart_read_async(uart_channel_t channel, uint8_t *rx_buff, uint32_t size) {
   // Verify parameters
-  verify_transfer_parameters(channel, rx_buff, size);
+  bool test_params = verify_transfer_parameters(channel, rx_buff, size);
+  if (!test_params) {
+    return false;
+  }
 
   // Check if usart channel is busy
   if (uart_busy[channel]) {
@@ -588,7 +602,11 @@ bool uart_read_async(uart_channel_t channel, uint8_t *rx_buff, uint32_t size) {
 bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
                          uint32_t size) {
   // Verify parameters
-  verify_transfer_parameters(channel, tx_buff, size);
+  bool test_params = verify_transfer_parameters(channel, tx_buff, size);
+
+  if (!test_params) {
+    return false;
+  }
 
   // Check if usart channel is busy
   if (uart_busy[channel]) {
@@ -613,7 +631,10 @@ bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
 bool uart_read_blocking(uart_channel_t channel, uint8_t *rx_buff,
                         uint32_t size) {
   // Verify parameters
-  verify_transfer_parameters(channel, rx_buff, size);
+  bool test_params = verify_transfer_parameters(channel, rx_buff, size);
+  if (!test_params) {
+    return false;
+  }
 
   // Check if usart channel is busy
   if (uart_busy[channel]) {
