@@ -60,14 +60,9 @@ typedef enum {
 
 typedef struct {
   uart_channel_t channel;
-  uint8_t tx_pin;
-  uint8_t rx_pin;
-  uint8_t ck_pin;
-  uint32_t baud_rate;
   uart_parity_t parity;
   uart_datalength_t data_length;
   uint32_t timeout;
-  uint32_t clk_freq;
 } uart_config_t;
 
 typedef struct {

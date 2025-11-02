@@ -41,18 +41,9 @@ void _start() {
   uart_parity_t parity = UART_PARITY_DISABLED;
   uart_datalength_t data_length = UART_DATALENGTH_8;
   config.channel = channel;
-  config.tx_pin = 98;
-  config.rx_pin = 99;
-  config.ck_pin = 121;
-  config.baud_rate = 9600;
   config.parity = parity;
   config.data_length = data_length;
   config.timeout = 0;
-  config.clk_freq = 1000000;
-  tal_enable_clock(config.tx_pin);
-  tal_enable_clock(config.rx_pin);
-  tal_enable_clock(config.ck_pin);
-  
   
 
   // asm("BKPT #0");

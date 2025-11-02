@@ -5,7 +5,8 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/",
-                "${workspaceFolder}/src/peripheral"
+                "${workspaceFolder}/src/peripheral",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

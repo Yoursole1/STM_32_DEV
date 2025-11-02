@@ -108,7 +108,7 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
     }
     if (rx_pin == 99 || rx_pin == 134) {
       tal_alternate_mode(rx_pin, 7);
-    } else if (tx_pin == 75) {
+    } else if (rx_pin == 75) {
       tal_alternate_mode(rx_pin, 4);
     } else {
       // // tal_raise(flag, "Invalid RX Pin for channel");
@@ -343,15 +343,52 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
                periph_dma_config_t *tx_stream, periph_dma_config_t *rx_stream) {
   // De-reference struct members for readability
   uart_channel_t channel = usart_config->channel;
-  uint8_t tx_pin = usart_config->tx_pin;
-  uint8_t rx_pin = usart_config->rx_pin;
-  uint8_t ck_pin = usart_config->ck_pin;
-  uint32_t baud_rate = usart_config->baud_rate;
   uart_parity_t parity = usart_config->parity;
   uart_datalength_t data_length = usart_config->data_length;
-  uint32_t clk_freq = usart_config->clk_freq;
-
+  uint8_t tx_pin;
+  uint8_t rx_pin;
+  uint8_t ck_pin = 121; // seems to be fixed?
+  uint32_t baud_rate = 9600;
+  uint32_t clk_freq = 1000000;
+  
   // Enable usart clock
+  switch (channel) {
+    case UART1:
+      tx_pin = 98;   /* primary TX option previously checked in file */
+      rx_pin = 99;   /* primary RX option */
+      break;
+    case UART2:
+      tx_pin = 39;
+      rx_pin = 40;
+      break;
+    case UART3:
+      tx_pin = 66;
+      rx_pin = 67;
+      break;
+    case UART4:
+      tx_pin = 37;
+      rx_pin = 38;
+      break;
+    case UART5:
+      tx_pin = 133;
+      rx_pin = 73;
+      break;
+    case UART6:
+      tx_pin = 93;
+      rx_pin = 94;
+      break;
+    case UART7:
+      tx_pin = 108;
+      rx_pin = 97;
+      break;
+    case UART8:
+      tx_pin = 139;
+      rx_pin = 138;
+      break;
+    default:
+      return false;
+      break;
+  }
   switch (channel) {
     UART_FIELD_GENERATOR(UART1, 4, RCC_APB2ENR)
     UART_FIELD_GENERATOR(UART2, 17, RCC_APB1LENR)
@@ -365,13 +402,36 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     // Handle error or invalid USART number
     break;
   }
+  tal_enable_clock(tx_pin);
+  tal_enable_clock(rx_pin);
+  tal_enable_clock(ck_pin);
+  uint8_t af_num = 0;
+  switch (channel) {
+    case UART1:
+    case UART2:
+    case UART3:
+      af_num = 7;  // AF7 for USART1/2/3
+      break;
+    case UART4:
+    case UART5:
+    case UART6:
+      af_num = 8;  // AF8 for UART4/5/6
+      break;
+    case UART7:
+    case UART8:
+      af_num = 8;  // AF8 for UART7/8
+      break;
+    default:
+      return false;
+  }
+
 
   // Set alternate-function mode
   tal_set_mode(tx_pin, 2);
   tal_set_mode(rx_pin, 2);
+  tal_alternate_mode(tx_pin, af_num);
+  tal_alternate_mode(rx_pin, af_num);
 
-  tal_alternate_mode(tx_pin, 7);
-  tal_alternate_mode(rx_pin, 7);
 
   // Ensure the clock pin is disabled for asynchronous mode
   CLR_FIELD(USARTx_CR2[channel], USARTx_CR2_CLKEN);
