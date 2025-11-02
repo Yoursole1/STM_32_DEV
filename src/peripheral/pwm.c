@@ -1,3 +1,27 @@
+/**
+ * This file is part of the Titan Flight Computer Project
+ * Copyright (c) 2024 UW SARP
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @file common/platform/pwm.c
+ * @authors Ethan Rad, Joshua Beard
+ * @brief Driver for pulse-width modulation
+ */
+
+
+
+
 
 #include "pwm.h"
 
@@ -47,59 +71,6 @@ int32_t TIM_TISEL_OFFSET = 104;
 
 #define APB1_FREQ 60000000 // TODO: determine system clock frequency
 
-// TIM1 channels and their corresponding pins
-// #define TIM1_CH1_1 70
-// #define TIM1_CH1_2 119
-// #define TIM1_CH2_1 74
-// #define TIM1_CH2_2 120
-// #define TIM1_CH3_1 76
-// #define TIM1_CH3_2 121
-// #define TIM1_CH4_1 77
-// #define TIM1_CH4_2 122
-
-// TIM2 channels and their corresponding pins
-#define TIM2_CH1_1 40  // PA0
-#define TIM2_CH1_2 51  // PA5
-#define TIM2_CH1_3 138 // PA15
-// #define TIM2_CH2_1 41
-// #define TIM2_CH2_2 161
-// #define TIM2_CH3_1 42
-// #define TIM2_CH3_2 79
-// #define TIM2_CH4_1 47
-// #define TIM2_CH4_2 80
-
-// TIM3 channels and their corresponding pins
-// #define TIM3_CH1_1 52
-// #define TIM3_CH1_2 115
-// #define TIM3_CH1_3 162
-#define TIM3_CH2_1 53  // PA7
-#define TIM3_CH2_2 116 // PC7
-#define TIM3_CH2_3 163 // PB5
-// #define TIM3_CH3_1 56
-// #define TIM3_CH3_2 117
-// #define TIM3_CH4_1 57
-// #define TIM3_CH4_2 118
-
-// TIM4 channels and their corresponding pins
-#define TIM4_CH1_1 100 // PD12
-#define TIM4_CH1_2 164 // PB6
-// #define TIM4_CH2_1 101
-// #define TIM4_CH2_2 165
-// #define TIM4_CH3_1 104
-// #define TIM4_CH3_2 167
-// #define TIM4_CH4_1 105
-// #define TIM4_CH4_2 168
-
-// TIM5 channels and their corresponding pins
-// #define TIM5_CH1_1 40
-// #define TIM5_CH1_2 87
-#define TIM5_CH2_1 41 // PA1
-#define TIM5_CH2_2 88 // PH11
-// #define TIM5_CH3_1 42
-// #define TIM5_CH3_2 89
-// #define TIM5_CH4_1 47
-// #define TIM5_CH4_2 131
-
 // If any pins are desired to be added for PWM functionality, all that needs to
 // be done is to add a pin struct with the appropriate information below
 pwm_pin_t valid_pins[] = {{TIM2_CH1_1, (int32_t *)GPIOA_BASE, 0, 1,
@@ -125,7 +96,8 @@ pwm_pin_t valid_pins[] = {{TIM2_CH1_1, (int32_t *)GPIOA_BASE, 0, 1,
 
 // Useful equations:
 // f_pwm = f_sysclk / (prescaler + 1) * (arr + 1) f_sysclk is the frequency of
-// APB1 system clock duty_cycle = (ccr / (arr + 1)) * 100
+// APB1 system clock 
+// duty_cycle = (ccr / (arr + 1)) * 100
 
 // Important Note: pins on same TIM and channel will output the same PWM, there
 // is no way to change this. Thus if TIM2_CH1_1 and TIM2_CH1_2 are both enabled,
@@ -399,6 +371,8 @@ bool tal_pwm_is_running(int pin, bool *const err) {
 }
 
 bool get_pin_info(int pin, pwm_pin_t *pin_info) {
+
+  // sizeof(valid_pins) / sizeof(valid_pins[0] possible bug?
   for (int i = 0; i < sizeof(valid_pins) / sizeof(valid_pins[0]); i++) {
     if (valid_pins[i].pin == pin) {
       *pin_info = valid_pins[i];
