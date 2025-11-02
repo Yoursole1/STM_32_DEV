@@ -57,7 +57,6 @@ add_executable(${EXECUTABLE}
   # ${CMAKE_SOURCE_DIR}/peripheral/pwm.c
   ${CMAKE_SOURCE_DIR}/internal/alloc.c
   ${CMAKE_SOURCE_DIR}/peripheral/uart.c
-  ${CMAKE_SOURCE_DIR}/peripheral/clk.c
   ${CMAKE_SOURCE_DIR}/internal/dma.c
  
 )

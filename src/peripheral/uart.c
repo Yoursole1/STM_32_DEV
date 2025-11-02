@@ -347,23 +347,27 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   uart_datalength_t data_length = usart_config->data_length;
   uint8_t tx_pin;
   uint8_t rx_pin;
-  uint8_t ck_pin = 121; // seems to be fixed?
+  uint8_t ck_pin = 0;
   uint32_t baud_rate = 9600;
+  // TODO: I think to get exact numbers for this I need devboard
   uint32_t clk_freq = 1000000;
   
   // Enable usart clock
   switch (channel) {
     case UART1:
-      tx_pin = 98;   /* primary TX option previously checked in file */
-      rx_pin = 99;   /* primary RX option */
+      tx_pin = 98;   
+      rx_pin = 99;
+      ck_pin = 97;   
       break;
     case UART2:
       tx_pin = 39;
       rx_pin = 40;
+      ck_pin = 43;
       break;
     case UART3:
       tx_pin = 66;
       rx_pin = 67;
+      ck_pin = 111;
       break;
     case UART4:
       tx_pin = 37;
@@ -376,6 +380,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     case UART6:
       tx_pin = 93;
       rx_pin = 94;
+      ck_pin = 95;
       break;
     case UART7:
       tx_pin = 108;
@@ -400,37 +405,20 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     UART_FIELD_GENERATOR(UART8, 31, RCC_APB1LENR)
   default:
     // Handle error or invalid USART number
+    return false;
     break;
   }
   tal_enable_clock(tx_pin);
   tal_enable_clock(rx_pin);
-  tal_enable_clock(ck_pin);
-  uint8_t af_num = 0;
-  switch (channel) {
-    case UART1:
-    case UART2:
-    case UART3:
-      af_num = 7;  // AF7 for USART1/2/3
-      break;
-    case UART4:
-    case UART5:
-    case UART6:
-      af_num = 8;  // AF8 for UART4/5/6
-      break;
-    case UART7:
-    case UART8:
-      af_num = 8;  // AF8 for UART7/8
-      break;
-    default:
-      return false;
+  if (ck_pin != 0) {
+    tal_enable_clock(ck_pin);
   }
 
 
   // Set alternate-function mode
   tal_set_mode(tx_pin, 2);
   tal_set_mode(rx_pin, 2);
-  tal_alternate_mode(tx_pin, af_num);
-  tal_alternate_mode(rx_pin, af_num);
+  set_alternate_function(channel, tx_pin, rx_pin);
 
 
   // Ensure the clock pin is disabled for asynchronous mode
