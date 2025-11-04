@@ -404,85 +404,75 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
 
 bool uart_write_byte(uart_channel_t channel, uint8_t data) {
   uint32_t count = 0;
-  // Get the correct registers/fields
-  ro_reg32_t isr_reg;
-  field32_t isr_field;
-  rw_reg32_t tdr_reg;
-  field32_t tdr_field;
+  
   if (IS_USART_CHANNEL(channel)) {
-    isr_reg = USARTx_ISR[channel];
-    isr_field = USARTx_ISR_TXE;
-    tdr_reg = USARTx_TDR[channel];
-    tdr_field = USARTx_TDR_TDR;
-  } else {
-    isr_reg = UARTx_ISR[channel];
-    isr_field = UARTx_ISR_TXE;
-    tdr_reg = UARTx_TDR[channel];
-    tdr_field = UARTx_TDR_TDR;
-  }
+    // Wait until the receive FIFO is not empty.
+    while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_TXE) == 0) {
+      if (count++ >= 1000000000) {
+        return false; // Return false on timeout
+      }
+    }
+    WRITE_FIELD(USARTx_TDR[channel], USARTx_TDR_TDR, data);
 
-  // Wait until the transmit FIFO is not full.
-  while (READ_FIELD(isr_reg, isr_field) == 0) {
-    if (count++ >= timeout) {
-      return false; // Return false on timeout
+    // This is a blocking function, so we return immediately after the data is
+    // placed in the FIFO. If you needed to ensure the data was completely sent,
+    // you would wait for the TC (Transmission Complete) flag.
+    while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_TC) == 0) {
+      asm("nop");
+    }
+  } else {
+    while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_TXE) == 0) {
+      if (count++ >= 1000000000) {
+        return false; // Return false on timeout
+      }
+    }
+     WRITE_FIELD(UARTx_TDR[channel], UARTx_TDR_TDR, data);
+
+    // This is a blocking function, so we return immediately after the data is
+    // placed in the FIFO. If you needed to ensure the data was completely sent,
+    // you would wait for the TC (Transmission Complete) flag.
+    while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_TC) == 0) {
+      asm("nop");
     }
   }
 
-  // Write the data to the transmit data register.
-  // This automatically pushes the data into the FIFO.
-  WRITE_FIELD(tdr_reg, tdr_field, data);
-
-  // This is a blocking function, so we return immediately after the data is
-  // placed in the FIFO. If you needed to ensure the data was completely sent,
-  // you would wait for the TC (Transmission Complete) flag.
-
-  // while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_TC) == 0) {
-  //   asm("nop");
-  // }
   return true;
 }
 
 bool uart_read_byte(uint8_t channel, uint8_t *data) {
   uint32_t count = 0;
 
-  // Get the correct registers/fields.
-  ro_reg32_t isr_reg;
-  field32_t isr_field;
-  ro_reg32_t rdr_reg;
-  field32_t rdr_field;
-
-  // Use the macro to select the correct register set for USART vs UART
-  if (IS_USART_CHANNEL(channel)) {
-    isr_reg = USARTx_ISR[channel];
-    isr_field = USARTx_ISR_RXNE;
-    rdr_reg = USARTx_RDR[channel];
-    rdr_field = USARTx_RDR_RDR;
-  } else {
-    isr_reg = UARTx_ISR[channel];
-    isr_field = UARTx_ISR_RXNE;
-    rdr_reg = UARTx_RDR[channel];
-    rdr_field = UARTx_RDR_RDR;
-  }
-
   // Input validation: ensure the destination pointer is not NULL
   if (data == NULL) {
     return false;
   }
 
-  // Wait until the receive FIFO is not empty.
-  while (READ_FIELD(isr_reg, isr_field) == 0) {
-    if (count++ >= timeout) {
-      return false; // Return false on timeout
+  if (IS_USART_CHANNEL(channel)) {
+    // Wait until the receive FIFO is not empty.
+    while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_RXNE) == 0) {
+      if (count++ >= 1000000000) {
+        return false; // Return false on timeout
+      }
+    }
+    *data = (uint8_t)READ_FIELD(USARTx_RDR[channel], USARTx_RDR_RDR);
+    while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_RXNE) == 0) {
+      asm("nop");
+    }
+  } else {
+    while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_RXNE) == 0) {
+      if (count++ >= 1000000000) {
+        return false; // Return false on timeout
+      }
+    }
+    *data = (uint8_t)READ_FIELD(UARTx_RDR[channel], UARTx_RDR_RDR);
+    while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_RXNE) == 0) {
+      asm("nop");
     }
   }
 
   // Read the data from the receive data register.
   // The hardware automatically retrieves the next available byte from the FIFO.
-  *data = (uint8_t)READ_FIELD(rdr_reg, rdr_field);
-
-  // while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_TC) == 0) {
-  //   asm("nop");
-  // }
+  
 
   return true;
 }
@@ -530,7 +520,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
   uint8_t tx_pin;
   uint8_t rx_pin;
   uint8_t ck_pin = 0;
-  uint32_t baud_rate = 9600;
+  uint32_t baud_rate = usart_config->baud_rate;
   // TODO: I think to get exact numbers for this I need devboard
   uint32_t clk_freq = usart_config->clk_freq;
   
@@ -693,9 +683,6 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
                                   .tx_stream = tx_stream->stream};
   uart_to_dma[channel] = info;
 
-  // Set the timeout parameter
-  timeout = usart_config->timeout;
-
   // Enable the peripheral
 
   SET_FIELD(USARTx_CR1[channel], USARTx_CR1_TE);
@@ -803,7 +790,7 @@ bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
     }
   }
 
-  uart_busy[channel] = false;
+  // uart_busy[channel] = false;
   return true;
 }
 
@@ -827,11 +814,11 @@ bool uart_read_blocking(uart_channel_t channel, uint8_t *rx_buff,
   for (uint32_t i = 0; i < size; i++) {
     if (!uart_read_byte(channel, &rx_buff[i])) {
       // tal_raise(flag, "USART read timeout");
-      uart_busy[channel] = false;
+      // uart_busy[channel] = false;
       return false;
     }
   }
 
-  uart_busy[channel] = false;
+  // uart_busy[channel] = false;
   return true;
 }

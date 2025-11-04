@@ -27,8 +27,8 @@ void test_uart(){
     config.channel = channel;
     config.parity = parity;
     config.data_length = data_length;
-    config.timeout = 1000000000;
-    config.clk_freq = 10000000; // 10 MHz
+    config.baud_rate = 9600;
+    config.clk_freq = 60000000; // 60 MHz
 
     // UART 1-3, 6 is fine (maybe)
     // UART 4-5, probably 7/8 isn't working (maybe)
