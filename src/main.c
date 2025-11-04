@@ -27,7 +27,12 @@ void test_uart(){
     config.channel = channel;
     config.parity = parity;
     config.data_length = data_length;
-    config.timeout = 0;
+    config.timeout = 1000000000;
+    config.clk_freq = 10000000; // 10 MHz
+
+    // UART 1-3, 6 is fine (maybe)
+    // UART 4-5, probably 7/8 isn't working (maybe)
+
     
     
 
@@ -52,10 +57,18 @@ void test_uart(){
     }
 
 
-    uint8_t num = 0b10101010;
-    uart_write_blocking(UART1, &num, 1);
+    // uint8_t num = 0b10101010;
+    // uart_write_blocking(channel, &num, 1);
+    // asm("BKPT #0");
+    // testing reading one byte
+    uint8_t buff[3];
+    uart_read_blocking(channel, buff, 1);
     asm("BKPT #0");
 
+    // multiple byte
+    channel = UART2;
+    uint8_t buff2[10];
+    uart_read_blocking(channel, buff2, 10);
 }
 
 void test_pwm(){
@@ -98,7 +111,9 @@ void _start() {
     }
 
     tal_set_pin(YELLOW_LED, 1);
+    
 
-    test_pwm();
+    // test_pwm();
+    test_uart();
 }
 
