@@ -378,7 +378,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
       break;
     case UART5:
       tx_pin = 133;
-      rx_pin = 73;
+      rx_pin = 132;
       break;
     case UART6:
       tx_pin = 93;
@@ -387,7 +387,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
       break;
     case UART7:
       tx_pin = 108;
-      rx_pin = 97;
+      rx_pin = 57;
       break;
     case UART8:
       tx_pin = 139;
