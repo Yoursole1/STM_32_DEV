@@ -59,7 +59,7 @@ void test_uart(){
 }
 
 void test_pwm(){
-    tal_pwm_pin_init(TIM2_CH1_1, 200, 30000, (void*)0);
+    tal_pwm_pin_init(TIM2_CH1_1, 2000, 30000, (void*)0);
 
     //----------
     // should be done inside the PWM driver.  Here for testing
@@ -69,7 +69,7 @@ void test_pwm(){
     tal_set_mode(TIM2_CH1_1, 2);
     tal_alternate_mode(TIM2_CH1_1, 0);
     //----------
-    
+
 
     tal_pwm_pin_enable(TIM2_CH1_1, (void*)0);
     asm("BKPT #0");
@@ -97,7 +97,8 @@ void _start() {
         asm("BKPT #0"); // heap init failure 
     }
 
+    tal_set_pin(YELLOW_LED, 1);
+
     test_pwm();
-    
 }
 
