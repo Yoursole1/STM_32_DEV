@@ -40,35 +40,20 @@ void test_uart(){
     int n = uart_init(&config, (void*) ( 0), (void*) (0), (void*) (0));
     asm("BKPT #0");
     // int n = 1; 
-    if (n == 1) {
-        for (int i = 0; i < 5; i++) {
-        tal_set_pin(GREEN_LED, 1);
-        delay();
-        tal_set_pin(GREEN_LED, 0);
-        delay();
-        }
-    } else {
-        for (int i = 0; i < 5; i++) {
-        tal_set_pin(RED_LED, 1);
-        delay();
-        tal_set_pin(RED_LED, 0);
-        delay();
-        }
-    }
 
 
-    // uint8_t num = 0b10101010;
-    // uart_write_blocking(channel, &num, 1);
-    // asm("BKPT #0");
-    // testing reading one byte
-    uint8_t buff[3];
-    uart_read_blocking(channel, buff, 1);
+    uint8_t num = 0b10101010;
+    uart_write_blocking(UART1, &num, 1);
     asm("BKPT #0");
+    // testing reading one byte
+    // uint8_t buff[3];
+    // uart_read_blocking(channel, buff, 1);
+    // asm("BKPT #0");
 
-    // multiple byte
-    channel = UART2;
-    uint8_t buff2[10];
-    uart_read_blocking(channel, buff2, 10);
+    // // multiple byte
+    // channel = UART2;
+    // uint8_t buff2[10];
+    // uart_read_blocking(channel, buff2, 10);
 }
 
 void test_pwm(){
