@@ -452,24 +452,20 @@ bool uart_read_byte(uint8_t channel, uint8_t *data) {
   if (IS_USART_CHANNEL(channel)) {
     // Wait until the receive FIFO is not empty.
     while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_RXNE) == 0) {
-      if (count++ >= 1000000000) {
-        return false; // Return false on timeout
-      }
+      asm("nop");
     }
     *data = (uint8_t)READ_FIELD(USARTx_RDR[channel], USARTx_RDR_RDR);
-    while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_RXNE) == 0) {
-      asm("nop");
-    }
+    // while (READ_FIELD(USARTx_ISR[channel], USARTx_ISR_RXNE) == 0) {
+    //   asm("nop");
+    // }
   } else {
     while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_RXNE) == 0) {
-      if (count++ >= 1000000000) {
-        return false; // Return false on timeout
-      }
-    }
-    *data = (uint8_t)READ_FIELD(UARTx_RDR[channel], UARTx_RDR_RDR);
-    while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_RXNE) == 0) {
       asm("nop");
     }
+    *data = (uint8_t)READ_FIELD(UARTx_RDR[channel], UARTx_RDR_RDR);
+    // while (READ_FIELD(UARTx_ISR[channel], UARTx_ISR_RXNE) == 0) {
+    //   asm("nop");
+    // }
   }
 
   // Read the data from the receive data register.
@@ -582,6 +578,7 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
     return false;
     break;
   }
+
   tal_enable_clock(tx_pin);
   tal_enable_clock(rx_pin);
   if (ck_pin != 0) {
@@ -778,10 +775,10 @@ bool uart_write_blocking(uart_channel_t channel, uint8_t *tx_buff,
   }
 
   // Check if usart channel is busy
-  while (!READ_FIELD(USARTx_ISR[channel], USARTx_ISR_BUSY)) {
-    asm("nop");
-    // tal_raise(flag, "USART channel is busy");
-  }
+  // while (!READ_FIELD(USARTx_ISR[channel], USARTx_ISR_BUSY)) {
+  //   asm("nop");
+  //   // tal_raise(flag, "USART channel is busy");
+  // }
   // uart_busy[channel] = true;
 
   // Transmit the data byte by byte
@@ -815,7 +812,7 @@ bool uart_read_blocking(uart_channel_t channel, uint8_t *rx_buff,
 
   // Receive the data byte by byte
   for (uint32_t i = 0; i < size; i++) {
-    if (!uart_read_byte(channel, &rx_buff[i])) {
+    if (!uart_read_byte(channel, rx_buff+i)) {
       // tal_raise(flag, "USART read timeout");
       // uart_busy[channel] = false;
       return false;

@@ -28,7 +28,7 @@ void test_uart(){
     config.parity = parity;
     config.data_length = data_length;
     config.baud_rate = 9600;
-    config.clk_freq = 60000000; // 60 MHz
+    config.clk_freq = 4000000; // 60 MHz
 
     // UART 1-3, 6 is fine (maybe)
     // UART 4-5, probably 7/8 isn't working (maybe)
@@ -42,13 +42,13 @@ void test_uart(){
     // int n = 1; 
 
 
-    uint8_t num = 0b10101010;
-    uart_write_blocking(UART1, &num, 1);
-    asm("BKPT #0");
-    // testing reading one byte
-    // uint8_t buff[3];
-    // uart_read_blocking(channel, buff, 1);
+    // uint8_t num = 0b10101010;
+    // uart_write_blocking(channel, &num, 1);
     // asm("BKPT #0");
+    // testing reading one byte
+    uint8_t buff[10];
+    int reading = uart_read_blocking(channel, buff, 10);
+    asm("BKPT #0");
 
     // // multiple byte
     // channel = UART2;
