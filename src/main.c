@@ -21,7 +21,7 @@ extern uint32_t __heap_start;
 
 void test_uart(){
     uart_config_t config;
-    uart_channel_t channel = UART1;
+    uart_channel_t channel = UART7;
     uart_parity_t parity = UART_PARITY_DISABLED;
     uart_datalength_t data_length = UART_DATALENGTH_8;
     config.channel = channel;
