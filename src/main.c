@@ -42,13 +42,16 @@ void test_uart(){
     // int n = 1; 
 
 
-    // uint8_t num = 0b10101010;
-    // uart_write_blocking(channel, &num, 1);
-    // asm("BKPT #0");
-    // testing reading one byte
-    uint8_t buff[10];
-    int reading = uart_read_blocking(channel, buff, 10);
+    uint8_t nums[10];
+    for (uint8_t i = 0; i < 10; i++) {
+      nums[i] = i;
+    }
+    uart_write_blocking(channel, nums, 10);
     asm("BKPT #0");
+    // testing reading one byte
+    // uint8_t buff[10];
+    // int reading = uart_read_blocking(channel, buff, 10);
+    // asm("BKPT #0");
 
     // // multiple byte
     // channel = UART2;
