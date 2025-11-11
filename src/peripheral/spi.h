@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
     uint8_t mode;     
     uint8_t data_size; 
-    uint8_t baudrate_prescaler; // Controls communication speed
+    uint16_t baudrate_prescaler; // Controls communication speed
     uint8_t first_bit; // 0 for LSB 1 for MSB
     uint8_t clk_pin;
     uint8_t miso_pin;
@@ -124,11 +124,11 @@ int spi_transfer_async(struct spi_async_transfer_t *transfer);
  * @param device: the device to block
  * @returns ti_errc_t error code
  */
-int spi_block(spi_device_t device);
+// int spi_block(spi_device_t device);
 
-/**
- * @brief Releases the spi device (pin and instance) to be used by anyone.
- * @param device: the device to release
- * @returns ti_errc_t error code
- */
-int spi_unblock(spi_device_t device);
+// /**
+//  * @brief Releases the spi device (pin and instance) to be used by anyone.
+//  * @param device: the device to release
+//  * @returns ti_errc_t error code
+//  */
+// int spi_unblock(spi_device_t device);

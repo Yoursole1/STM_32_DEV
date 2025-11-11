@@ -5,7 +5,6 @@
 #include "peripheral/uart.h"
 #include "peripheral/pwm.h"
 #include "peripheral/spi.h"
-#include "peripheral/spi.c"
 
 #define USR_BUTTON 9
 #define GREEN_LED 49
@@ -34,6 +33,27 @@ void test_spi() {
     config.priority = 0;
     config.mutex_timeout =0;
     spi_init(instance, &config);
+    asm("BKPT #0");
+
+    spi_device_t device;
+    device.instance = 2;
+    device.gpio_pin = 0;
+
+    struct spi_sync_transfer_t transfer;
+    uint8_t* source;
+    (*source) = 0b10101010;
+    transfer.source = source;
+    uint8_t* dest;
+    transfer.dest = dest;
+    size_t size = 1;
+    transfer.size = size;
+    uint32_t timeout = 10000000;
+    transfer.timeout = timeout;
+    bool read_inc = false;
+    transfer.read_inc = read_inc;
+    asm("BKPT #0");
+
+    spi_transfer_sync(&transfer);
     asm("BKPT #0");
 }
 
