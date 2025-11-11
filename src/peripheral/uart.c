@@ -269,24 +269,24 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
       // tal_raise(flag, "Invalid TX Pin for channel");
       return false;
     }
-    // if (rx_pin == 132 || rx_pin == 72) {
-    //   tal_alternate_mode(rx_pin, 14);
-    // } else if (rx_pin == 114) {
-    //   tal_alternate_mode(rx_pin, 8);
-    // } else {
-    //   // tal_raise(flag, "Invalid RX Pin for channel");
-    //   return false;
-    // }
-
-    if (tx_pin == 73) {
-      tal_alternate_mode(tx_pin, 8);
-    } else if (tx_pin == 111) {
-      tal_alternate_mode(tx_pin, 4);
-    } else if (tx_pin == 133) {
-      tal_alternate_mode(tx_pin, 13);
+    if (rx_pin == 132 || rx_pin == 72) {
+      tal_alternate_mode(rx_pin, 14);
+    } else if (rx_pin == 114) {
+      tal_alternate_mode(rx_pin, 8);
     } else {
+      // tal_raise(flag, "Invalid RX Pin for channel");
       return false;
     }
+
+    // if (tx_pin == 73) {
+    //   tal_alternate_mode(tx_pin, 8);
+    // } else if (tx_pin == 111) {
+    //   tal_alternate_mode(tx_pin, 4);
+    // } else if (tx_pin == 133) {
+    //   tal_alternate_mode(tx_pin, 13);
+    // } else {
+    //   return false;
+    // }
 
 
     // if (rx_pin == 72) {
@@ -300,19 +300,19 @@ bool set_alternate_function(uart_channel_t channel, uint8_t tx_pin,
     // }
     break;
   case UART6:
-    if (tx_pin == 93) {
-      tal_alternate_mode(tx_pin, 5);
-    } else if (tx_pin == 127) {
-      tal_alternate_mode(tx_pin, 3);
-    } else {
-      return false;
-    }
-    // if (tx_pin == 93 || tx_pin == 122) {
-    //   tal_alternate_mode(tx_pin, 7);
+    // if (tx_pin == 93) {
+    //   tal_alternate_mode(tx_pin, 5);
+    // } else if (tx_pin == 127) {
+    //   tal_alternate_mode(tx_pin, 3);
     // } else {
-    //   // tal_raise(flag, "Invalid TX Pin for channel");
     //   return false;
     // }
+    if (tx_pin == 93 || tx_pin == 122) {
+      tal_alternate_mode(tx_pin, 7);
+    } else {
+      // tal_raise(flag, "Invalid TX Pin for channel");
+      return false;
+    }
     if (rx_pin == 94) {
       // tal_alternate_mode(rx_pin, 6);
       tal_alternate_mode(rx_pin, 7);
@@ -542,11 +542,11 @@ bool uart_init(uart_config_t *usart_config, dma_callback_t *callback,
       ck_pin = 111;
       break;
     case UART4:
-      tx_pin = 101;
-      rx_pin = 100;
+      tx_pin = 37;
+      rx_pin = 38;
       break;
     case UART5:
-      tx_pin = 111;
+      tx_pin = 133;
       rx_pin = 132;
       break;
     case UART6:

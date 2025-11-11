@@ -4,6 +4,8 @@
 #include "internal/alloc.h"
 #include "peripheral/uart.h"
 #include "peripheral/pwm.h"
+#include "peripheral/spi.h"
+#include "peripheral/spi.c"
 
 #define USR_BUTTON 9
 #define GREEN_LED 49
@@ -19,9 +21,26 @@ void delay() {
 extern uint32_t __heap_start;
 
 
+void test_spi() {
+    uint8_t instance = 2;
+    spi_config_t config;
+    config.clk_pin = 66; // alt mode 4
+    config.mosi_pin = 28; // alt mode 3;
+    config.miso_pin = 74; // alt mode 3;
+    config.data_size = 8;
+    config.mode = 0;
+    config.baudrate_prescaler = 2;
+    config.first_bit = 0;
+    config.priority = 0;
+    config.mutex_timeout =0;
+    spi_init(instance, &config);
+    asm("BKPT #0");
+}
+
+
 void test_uart(){
     uart_config_t config;
-    uart_channel_t channel = UART7;
+    uart_channel_t channel = UART1;
     uart_parity_t parity = UART_PARITY_DISABLED;
     uart_datalength_t data_length = UART_DATALENGTH_8;
     config.channel = channel;
@@ -54,9 +73,9 @@ void test_uart(){
     // asm("BKPT #0");
 
     // // multiple byte
-    // channel = UART2;
-    // uint8_t buff2[10];
-    // uart_read_blocking(channel, buff2, 10);
+    // uint8_t buff[10];
+    // uart_read_blocking(channel, buff, 10);
+    // asm("BKPT #0");
 }
 
 void test_pwm(){
@@ -98,10 +117,11 @@ void _start() {
         asm("BKPT #0"); // heap init failure 
     }
 
-    tal_set_pin(YELLOW_LED, 1);
+    // tal_set_pin(YELLOW_LED, 1);
     
 
     // test_pwm();
-    test_uart();
+    // test_uart();
+    test_spi();
 }
 
