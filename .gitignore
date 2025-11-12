@@ -246,3 +246,8 @@ alloctest_output.txt
 
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,c,c++,clion,macos
+build.share
+stm_usb.py
+dist/
+stm_usb.spec
+build/

@@ -9,5 +9,9 @@
         "watchdog.h": "c",
         "cmath": "c",
         "dma.h": "c"
-    }
+    },
+    "python.analysis.extraPaths": [
+        "./stm_",
+        "./stm_"
+    ]
 }
