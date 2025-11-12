@@ -244,9 +244,9 @@ Temporary Items
 test_alloc
 alloctest_output.txt
 
+# STM usb stuff
+dist/
+build/
+!stm_usb/stm_usb_win.exe
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake,c,c++,clion,macos
-build.share
-dist/
-stm_usb.spec
-build/
