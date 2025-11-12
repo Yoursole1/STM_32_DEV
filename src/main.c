@@ -119,29 +119,29 @@ void test_pwm(){
 
 void _start() {
 
-    tal_enable_clock(GREEN_LED);
-    tal_enable_clock(RED_LED);
-    tal_enable_clock(YELLOW_LED);
-    tal_enable_clock(USR_BUTTON);
+    // tal_enable_clock(GREEN_LED);
+    // tal_enable_clock(RED_LED);
+    // tal_enable_clock(YELLOW_LED);
+    // tal_enable_clock(USR_BUTTON);
 
 
-    tal_set_mode(GREEN_LED, 1);
-    tal_set_mode(RED_LED, 1);
-    tal_set_mode(YELLOW_LED, 1);
-    tal_set_mode(USR_BUTTON, 0);
+    // tal_set_mode(GREEN_LED, 1);
+    // tal_set_mode(RED_LED, 1);
+    // tal_set_mode(YELLOW_LED, 1);
+    // tal_set_mode(USR_BUTTON, 0);
     
-    HEAP_START = &__heap_start;
-    int heap_status = init_heap();
+    // HEAP_START = &__heap_start;
+    // int heap_status = init_heap();
 
-    if(heap_status != 1){
-        asm("BKPT #0"); // heap init failure 
-    }
+    // if(heap_status != 1){
+    //     asm("BKPT #0"); // heap init failure 
+    // }
 
     // tal_set_pin(YELLOW_LED, 1);
     
 
     // test_pwm();
     // test_uart();
-    test_spi();
+    // test_spi();
 }
 

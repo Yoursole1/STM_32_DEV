@@ -106,9 +106,9 @@ void cm7_reset_exc_handler(void) {
   // TODO - Program startup/entry here
   _start();
   _invoke_fini_fn();
-  // while (true) {
-  //   asm("wfi");
-  // }
+  while (true) {
+    asm("wfi");
+  }
 }
 
 // Reset handler for the CM4 core.

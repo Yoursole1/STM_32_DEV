@@ -1,10 +1,10 @@
+#!/usr/bin/env bash
 set -e
 set -o pipefail
 
-BUILD_DIR="./src/build/"
 OPENOCD_CMD=(openocd -f interface/stlink.cfg -f target/stm32h7x_dual_bank.cfg -c "program titan.elf verify reset exit")
 
-# detecting OS
+# Use OS to detect the binary
 OS_TYPE=$(uname -s)
 case "$OS_TYPE" in
   Darwin)
@@ -22,53 +22,150 @@ case "$OS_TYPE" in
     ;;
 esac
 
-# if binary file not found
+
+# Make sure file was found
 if [ ! -f "$USB_RESET_BIN" ]; then
   echo "USB reset binary not found: $USB_RESET_BIN"
   exit 2
 fi
 
-echo "Running USB reset ($USB_RESET_BIN)..."
-"$USB_RESET_BIN"
-USB_RC=$?
-if [ $USB_RC -ne 0 ]; then
-  echo "USB reset failed (rc=$USB_RC). Aborting."
-  exit 3
-fi
+run_usb_reset() {
+  echo "Running USB reset ($USB_RESET_BIN)..."
+  "$USB_RESET_BIN"
+  USB_RC=$?
+  if [ $USB_RC -ne 0 ]; then
+    echo "USB reset failed (rc=$USB_RC). Aborting."
+    exit 3
+  fi
+}
 
+# initial USB reset
+run_usb_reset
 
+# Building project
 cd "src"
-mkdir "build/"
+mkdir -p "build/"
 cd "build/"
 
 echo "Running cmake .."
-cmake .. || { echo "cmake failed"; popd >/dev/null; exit 20; }
+cmake .. || { echo "cmake failed"; exit 20; }
 
 echo "Running make"
-make || { echo "make failed"; popd >/dev/null; exit 21; }
+make || { echo "make failed"; exit 21; }
 
+# running openocd
+MAX_ATTEMPTS=3
+attempt_count=0
 
-# openocd
-echo "Flashing with OpenOCD..."
-OPENOCD_OUTPUT_FILE="$(mktemp)"
-("${OPENOCD_CMD[@]}" 2>&1 | tee "$OPENOCD_OUTPUT_FILE")
-OPENOCD_RC=${PIPESTATUS[0]}
+while [ $attempt_count -lt $MAX_ATTEMPTS ]; do
+  attempt_count=$((attempt_count+1))
+  echo "Flashing with OpenOCD (attempt $attempt_count/$MAX_ATTEMPTS)..."
+  OPENOCD_OUTPUT_FILE="$(mktemp)"
+  # Capture both stdout and stderr into the file
+  if "${OPENOCD_CMD[@]}" >"$OPENOCD_OUTPUT_FILE" 2>&1; then
+    OPENOCD_RC=0
+  else
+    OPENOCD_RC=$?
+  fi
 
-# Check for common errors
-if grep -Eiq "failed|error|no device|no such file|target not halted|no connection|failed to connect|controller not found" "$OPENOCD_OUTPUT_FILE"; then
-  echo "OpenOCD reported errors. Inspect output:"
-  sed -n '1,200p' "$OPENOCD_OUTPUT_FILE"
-  echo "If programming failed due to target state, try a manual reset or power cycle."
+  # Normalize output
+  output="$(
+    tr -d '\r' <"$OPENOCD_OUTPUT_FILE" \
+    | sed 's/\x1b\[[0-9;]*m//g'
+  )"
+
+  # Timeout waiting for algorithm
+  if printf '%s\n' "$output" | grep -iq -- "timeout waiting for algorithm"; then
+    echo "Timeout waiting for algorithm. Attempting automated recovery..."
+
+    case "$OS_TYPE" in
+      # no CLI on mac
+      Darwin)
+        echo "Open STM32CubeProgrammer app, connect board, do full chip erase,"
+        echo "then disconnect the board and press Enter to continue."
+        read -r -p "Press Enter after you have completed the full chip erase. "
+        # re-run USB reset to re-enumerate device
+        cd ../../ 
+        run_usb_reset
+        cd src/build/
+        rm -f "$OPENOCD_OUTPUT_FILE"
+        continue
+        ;;
+      Linux)
+        # linux - find CLI
+        CLI_BIN="$(command -v STM32_Programmer_CLI || true)"
+        # TODO: unsure if this is right path for CLI in linux
+        [ -z "$CLI_BIN" ] && CLI_BIN="/opt/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI"
+        ;;
+      MINGW*|MSYS*|CYGWIN*|Windows_NT)
+        # Windows - find CLI
+        CLI_BIN="$(command -v STM32_Programmer_CLI.exe || true)"
+        # TODO: unsure if this is right path for CLI in windows
+        [ -z "$CLI_BIN" ] && CLI_BIN="/c/Program Files/STMicroelectronics/STM32Cube/STM32CubeProgrammer/bin/STM32_Programmer_CLI.exe"
+        ;;
+      *)
+        echo "Unsupported OS for automated CLI erase: $OS_TYPE"
+        rm -f "$OPENOCD_OUTPUT_FILE"
+        break
+        ;;
+    esac
+    
+    # run CLI (windows/linux only)
+    if [[ "$OS_TYPE" != "Darwin" ]]; then
+      if [ ! -x "$CLI_BIN" ] && ! command -v "$CLI_BIN" >/dev/null 2>&1; then
+        echo "STM32_Programmer_CLI not found at: $CLI_BIN"
+        echo "Please install STM32CubeProgrammer CLI or add it to PATH, then retry."
+        rm -f "$OPENOCD_OUTPUT_FILE"
+        break
+      fi
+
+      echo "Found STM32 CLI: $CLI_BIN"
+      echo "Attempting connect -> usb replug -> full chip erase -> disconnect"
+      # connect with devboard
+      "$CLI_BIN" -c port=SWD -d 0
+      rc=$?; if [ $rc -ne 0 ]; then echo "CLI connect failed (rc=$rc)"; rm -f "$OPENOCD_OUTPUT_FILE"; break; fi
+      # usb replug
+      "$CLI_BIN" -c port=SWD -d 0 -srst_only
+      rc=$?; if [ $rc -ne 0 ]; then echo "CLI soft-reset failed (rc=$rc)"; "$CLI_BIN" -c port=SWD -d 0 -dis >/dev/null 2>&1 || true; rm -f "$OPENOCD_OUTPUT_FILE"; break; fi
+      # full chip erase
+      "$CLI_BIN" -c port=SWD -d 0 -e all
+      rc=$?; if [ $rc -ne 0 ]; then echo "CLI erase failed (rc=$rc)"; "$CLI_BIN" -c port=SWD -d 0 -dis >/dev/null 2>&1 || true; rm -f "$OPENOCD_OUTPUT_FILE"; break; fi
+      # disconnect
+      "$CLI_BIN" -c port=SWD -d 0 -dis
+      rc=$?; if [ $rc -ne 0 ]; then echo "CLI disconnect returned rc=$rc (nonfatal)"; fi
+
+      cd ../../ 
+      run_usb_reset
+      cd src/build/
+      rm -f "$OPENOCD_OUTPUT_FILE"
+      echo "Recovery via STM32CubeProgrammer CLI complete — retrying OpenOCD flash..."
+      continue
+    fi
+  fi
+
+  # Checksum mismatch
+  if printf '%s\n' "$output" | grep -iq -- "checksum mismatch"; then
+    echo "OpenOCD reported checksum mismatch (attempt $checksum_fail_count/$MAX_CHECKSUM_RETRIES)."
+    cd ../../
+    echo "Running USB reset"
+    run_usb_reset
+    cd src/build/
+    rm -f "$OPENOCD_OUTPUT_FILE"
+    continue
+  fi
+
   rm -f "$OPENOCD_OUTPUT_FILE"
-  exit 30
-fi
 
-# Success
-rm -f "$OPENOCD_OUTPUT_FILE"
-if [ $OPENOCD_RC -eq 0 ]; then
-  echo "Flash successful."
-  exit 0
-else
-  echo "OpenOCD exited with code $OPENOCD_RC"
-  exit 31
+  # Success
+  if [ $OPENOCD_RC -eq 0 ]; then
+    echo "Flash successful."
+    break
+  fi
+
+done
+
+if [ $attempt_count -ge $MAX_ATTEMPTS ]; then
+  echo "OpenOCD did not succeed after $MAX_ATTEMPTS attempts."
+  echo "Other issue likely occurred."
+  exit 32
 fi
