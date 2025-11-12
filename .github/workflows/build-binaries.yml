@@ -27,6 +27,7 @@ jobs:
         python -m pip install pyusb pyinstaller
 
     - name: Build executable with PyInstaller
+      shell: bash
       run: |
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           pyinstaller --onefile stm_usb.py --name stm_usb_win.exe
