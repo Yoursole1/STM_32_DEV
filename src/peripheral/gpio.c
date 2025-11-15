@@ -20,7 +20,7 @@
  */
 
 #include "internal/mmio.h"
-#include "peripheral/gpio.h"
+#include "gpio.h"
 
 
 /**
