@@ -72,6 +72,8 @@ typedef struct {
 #define TIM3_CH2_1 53  // PA7
 #define TIM3_CH2_2 116 // PC7
 #define TIM3_CH2_3 163 // PB5
+
+#define TIM3_CH3_1 49 // PB0 
 // #define TIM3_CH3_1 56
 // #define TIM3_CH3_2 117
 // #define TIM3_CH4_1 57

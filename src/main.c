@@ -99,7 +99,7 @@ void test_uart(){
 }
 
 void test_pwm(){
-    tal_pwm_pin_init(TIM2_CH1_1, 2000, 30000, (void*)0);
+    tal_pwm_pin_init(TIM2_CH1_1, 1000, 30000, (void*)0);
 
     //----------
     // should be done inside the PWM driver.  Here for testing
@@ -117,8 +117,47 @@ void test_pwm(){
     asm("BKPT #0");
 }
 
+void test_pwm_first_principles(){
+
+    
+    tal_enable_clock(GREEN_LED);
+    tal_enable_clock(YELLOW_LED);
+    tal_set_mode(YELLOW_LED, 1);
+    tal_set_pin(YELLOW_LED, 1); // boot successful 
+
+    tal_set_mode(GREEN_LED, 2);
+    tal_alternate_mode(GREEN_LED, 1);
+
+    uint16_t freqency = 32;
+
+    SET_FIELD(RCC_APB1LENR, RCC_APB1LENR_TIMxEN[3]);
+
+    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_L, (0 << 16) - 1);
+    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_H, (0 << 16) - 1);
+    WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_L, 10000);
+
+    field32_t G_TIMx_CCMR2_OUTPUT_OC3M = {
+        .msk = (0b111 << 4),
+        .pos = 4
+    };
+    field32_t G_TIMx_CCMR2_OUTPUT_OC3PE = {
+        .msk = 0b1 << 3,
+        .pos = 3
+    };
+
+    WRITE_FIELD(G_TIMx_CCMR2_OUTPUT[3], G_TIMx_CCMR2_OUTPUT_OC3M, 0b0110); // configure PWM output
+    SET_FIELD(G_TIMx_CCMR2_OUTPUT[3], G_TIMx_CCMR2_OUTPUT_OC3PE);
+    SET_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_ARPE);
+
+    SET_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
+    asm("bkpt #0");
+    CLR_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
+    asm("bkpt #0");
+}
+
 void _start() {
 
+    test_pwm_first_principles();
     // tal_enable_clock(GREEN_LED);
     // tal_enable_clock(RED_LED);
     // tal_enable_clock(YELLOW_LED);

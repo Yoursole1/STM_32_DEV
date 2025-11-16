@@ -92,7 +92,9 @@ pwm_pin_t valid_pins[] = {{TIM2_CH1_1, (int32_t *)GPIOA_BASE, 0, 1,
                           {TIM5_CH2_1, (int32_t *)GPIOA_BASE, 1, 2,
                            (int32_t *)TIM5_Base, 0, 0, false},
                           {TIM5_CH2_2, (int32_t *)GPIOH_BASE, 11, 2,
-                           (int32_t *)TIM5_Base, 0, 0, false}};
+                           (int32_t *)TIM5_Base, 0, 0, false}, 
+                          {TIM3_CH3_1, (int32_t*)GPIOB_BASE, 0, 3, 
+                            (int32_t*)TIM3_Base, 0, 0, false}};
 
 // Useful equations:
 // f_pwm = f_sysclk / (prescaler + 1) * (arr + 1) f_sysclk is the frequency of
