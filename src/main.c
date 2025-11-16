@@ -11,8 +11,12 @@
 #define YELLOW_LED 139
 #define RED_LED 74
 
-void delay() {
-  for (int i = 0; i < 100000; i++) {
+
+/**
+ * delay is # of clock cycles, not a time unit
+ */
+void delay(int delay) {
+  for (int i = 0; i < delay; i++) {
     asm("nop");
   }
 }
@@ -126,15 +130,16 @@ void test_pwm_first_principles(){
     tal_set_pin(YELLOW_LED, 1); // boot successful 
 
     tal_set_mode(GREEN_LED, 2);
-    tal_alternate_mode(GREEN_LED, 1);
+    tal_alternate_mode(GREEN_LED, 2);
 
-    uint16_t freqency = 32;
+    uint16_t freqency = 32; // unused atm
 
     SET_FIELD(RCC_APB1LENR, RCC_APB1LENR_TIMxEN[3]);
 
-    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_L, (0 << 16) - 1);
-    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_H, (0 << 16) - 1);
-    WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_L, 10000);
+    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_L, (1 << 16) - 1);
+    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_H, (1 << 16) - 1);
+    WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_L, (1 << 16) - 1);
+    WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_H, (1 << 16) - 1);
 
     field32_t G_TIMx_CCMR2_OUTPUT_OC3M = {
         .msk = (0b111 << 4),
@@ -145,14 +150,29 @@ void test_pwm_first_principles(){
         .pos = 3
     };
 
-    WRITE_FIELD(G_TIMx_CCMR2_OUTPUT[3], G_TIMx_CCMR2_OUTPUT_OC3M, 0b0110); // configure PWM output
+    WRITE_FIELD(G_TIMx_CCMR2_OUTPUT[3], G_TIMx_CCMR2_OUTPUT_OC3M, 0b0110); // configure as PWM output
     SET_FIELD(G_TIMx_CCMR2_OUTPUT[3], G_TIMx_CCMR2_OUTPUT_OC3PE);
     SET_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_ARPE);
 
+    SET_FIELD(G_TIMx_CCER[3], G_TIMx_CCER_CCxE[3]);
     SET_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
-    asm("bkpt #0");
-    CLR_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
-    asm("bkpt #0");
+    
+    uint16_t duty_cycle = UINT16_MAX;
+    int inc = -1;
+
+    while (true) {
+        duty_cycle += inc;
+        if (duty_cycle == 0 || duty_cycle == UINT16_MAX) {
+            inc = -inc;
+        }
+
+        WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_L, duty_cycle);
+
+        delay(100);
+    }
+
+
+    // CLR_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
 }
 
 void _start() {
