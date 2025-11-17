@@ -7881,7 +7881,9 @@ extern const field32_t G_TIMx_EGR_CCxG[5];            /** @brief Capture/compare
 extern const field32_t G_TIMx_CCMR1_OUTPUT_CCxS[3];   /** @brief CC1S. */
 extern const field32_t G_TIMx_CCMR1_OUTPUT_OCxFE[3];  /** @brief OC1FE. */
 extern const field32_t G_TIMx_CCMR1_OUTPUT_OCxPE[3];  /** @brief OC1PE. */
+extern const field32_t G_TIMx_CCMR2_OUTPUT_OCxPE[5];  /** @brief OC1PE. */
 extern const field32_t G_TIMx_CCMR1_OUTPUT_OCxM[3];   /** @brief OC1M. */
+extern const field32_t G_TIMx_CCMR2_OUTPUT_OCxM[5];   /** @brief OC1M. */
 extern const field32_t G_TIMx_CCMR1_OUTPUT_OCxCE[3];  /** @brief OC1CE. */
 extern const field32_t G_TIMx_CCMR1_OUTPUT_OCxM_3[3]; /** @brief Output compare 1 mode - bit 3. */
 extern const field32_t G_TIMx_CCMR1_INPUT_ICxF[3];    /** @brief Input capture 1 filter. */

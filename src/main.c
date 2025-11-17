@@ -130,7 +130,7 @@ void test_pwm_first_principles(){
     tal_set_pin(YELLOW_LED, 1); // boot successful 
 
     tal_set_mode(GREEN_LED, 2);
-    tal_alternate_mode(GREEN_LED, 2);
+    tal_alternate_mode(GREEN_LED, 2);  
 
     uint16_t freqency = 32; // unused atm
 
@@ -175,9 +175,122 @@ void test_pwm_first_principles(){
     // CLR_FIELD(G_TIMx_CR1[3], G_TIMx_CR1_CEN);
 }
 
+// field32_t G_TIMx_CCMR2_OUTPUT_OCxM[5] = {
+//     [3] = {
+//         .msk = (0b111 << 4),
+//         .pos = 4
+//     },
+//     [4] = {
+//         .msk = (0b111 << 12),
+//         .pos = 12
+//     }
+// };
+
+// field32_t G_TIMx_CCMR2_OUTPUT_OCxPE[5] = {
+//     [3] = {
+//         .msk = 0b1 << 3,
+//         .pos = 3
+//     },
+//     [4] = {
+//         .msk = 0b1 << 11,
+//         .pos = 11
+//     }
+// };
+
+// field32_t G_TIMx_CCMR1_OUTPUT_OCxM[5] = {
+//     [1] = {
+//         .msk = (0b111 << 4),
+//         .pos = 4
+//     },
+//     [2] = {
+//         .msk = (0b111 << 12),
+//         .pos = 12
+//     }
+// };
+
+// field32_t G_TIMx_CCMR1_OUTPUT_OCxPE[5] = {
+//     [1] = {
+//         .msk = 0b1 << 3,
+//         .pos = 3
+//     },
+//     [2] = {
+//         .msk = 0b1 << 11,
+//         .pos = 11
+//     }
+// };
+
+struct ti_pwm_config_t {
+    int32_t channel;
+    int32_t alt_num;
+    int32_t pin;
+    int32_t freq;
+    int32_t duty;
+};
+
+# define PWM_CLOCK_FREQ 4000000
+
+void ti_set_pwm(int32_t pwm_inst, struct ti_pwm_config_t config) {
+    if (config.freq < 0 || config.duty < 0) {
+        // Do error stuff here
+        return;
+    }
+    if (config.freq == 0 || config.duty == 0) {
+        CLR_FIELD(RCC_APB1LENR, RCC_APB1LENR_TIMxEN[pwm_inst]);
+        return;    
+    }
+    // Enable peripheral clock
+    SET_FIELD(RCC_APB1LENR, RCC_APB1LENR_TIMxEN[pwm_inst]);
+
+    // Set up GPIO pin
+    tal_enable_clock(config.pin);
+    tal_alternate_mode(config.pin, config.alt_num);
+    tal_set_mode(config.pin, 2);
+
+    // Set frequency of timer
+    const int32_t max_val = PWM_CLOCK_FREQ / config.freq;
+    WRITE_FIELD(G_TIMx_ARR[3], G_TIMx_ARR_ARR_L, max_val);
+    
+    // Set duty cycle
+    WRITE_FIELD(G_TIMx_CCR3[3], G_TIMx_CCR3_CCR3_L, (max_val / 1000) * config.duty);
+
+    // Set to output compare
+    if (config.channel >= 3) {
+        WRITE_FIELD(G_TIMx_CCMR2_OUTPUT[pwm_inst], G_TIMx_CCMR2_OUTPUT_OCxM[config.channel], 0b0110);
+        SET_FIELD(G_TIMx_CCMR2_OUTPUT[pwm_inst], G_TIMx_CCMR2_OUTPUT_OCxPE[config.channel]);
+    } else {
+        WRITE_FIELD(G_TIMx_CCMR1_OUTPUT[pwm_inst], G_TIMx_CCMR1_OUTPUT_OCxM[config.channel], 0b0110);
+        SET_FIELD(G_TIMx_CCMR1_OUTPUT[pwm_inst], G_TIMx_CCMR2_OUTPUT_OCxPE[config.channel]);
+    }
+    // Do some magic
+    SET_FIELD(G_TIMx_CCER[pwm_inst], G_TIMx_CCER_CCxE[config.channel]);
+    SET_FIELD(G_TIMx_CR1[pwm_inst], G_TIMx_CR1_CEN);
+
+    // Enable PWM output
+    SET_FIELD(G_TIMx_CR1[pwm_inst], G_TIMx_CR1_ARPE);
+}
+
 void _start() {
 
-    test_pwm_first_principles();
+    struct ti_pwm_config_t pwm_config = {
+        .channel = 3,
+        .alt_num = 2,
+        .pin = 49,
+        .freq = 100,
+        .duty = 0,
+    };
+
+    int32_t dir = 1;
+
+    while (true) {
+        ti_set_pwm(3, pwm_config);
+        pwm_config.duty += dir;
+        if (pwm_config.duty == 1000 || pwm_config.duty == 0) {
+            dir *= -1;
+        }
+        delay(1000);
+    }
+
+    // test_pwm_first_principles();
     // tal_enable_clock(GREEN_LED);
     // tal_enable_clock(RED_LED);
     // tal_enable_clock(YELLOW_LED);
@@ -203,4 +316,8 @@ void _start() {
     // test_uart();
     // test_spi();
 }
+
+
+
+
 
